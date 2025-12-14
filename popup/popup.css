@@ -1,0 +1,206 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 400px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #333;
+}
+
+.container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+main {
+  padding: 20px;
+}
+
+section {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #555;
+  font-size: 14px;
+}
+
+input[type="text"],
+select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.help-text {
+  font-size: 11px;
+  color: #888;
+  margin-top: 5px;
+}
+
+.btn-primary,
+.btn-secondary {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 10px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #555;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.status-section {
+  min-height: 50px;
+}
+
+.status {
+  padding: 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.status.hidden {
+  display: none;
+}
+
+.status.loading {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+}
+
+.status.success {
+  background: #d4edda;
+  border: 1px solid #28a745;
+  color: #155724;
+}
+
+.status.error {
+  background: #f8d7da;
+  border: 1px solid #dc3545;
+  color: #721c24;
+}
+
+.status-icon {
+  font-size: 18px;
+}
+
+.logs-section h3 {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.logs {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 12px;
+  font-family: "Courier New", monospace;
+  line-height: 1.6;
+}
+
+.logs:empty::before {
+  content: "Nenhum log ainda...";
+  color: #999;
+  font-style: italic;
+}
+
+.log-entry {
+  margin-bottom: 5px;
+  padding: 4px;
+  border-radius: 3px;
+}
+
+.log-entry.success {
+  color: #28a745;
+}
+
+.log-entry.error {
+  color: #dc3545;
+}
+
+.log-entry.info {
+  color: #17a2b8;
+}
+
+footer {
+  background: #f8f9fa;
+  padding: 12px;
+  text-align: center;
+  font-size: 11px;
+  color: #888;
+  border-top: 1px solid #e0e0e0;
+}

@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "GWM Lead Automation",
+  "version": "1.0.1",
+  "description": "Automação de tarefas para leads no Salesforce - Grupo Líder",
+  "permissions": ["storage", "tabs", "activeTab", "scripting"],
+  "host_permissions": ["https://grupolider.lightning.force.com/*"],
+  "background": {
+    "service_worker": "background/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://grupolider.lightning.force.com/lightning/r/Lead/*"],
+      "js": [
+        "content/brands/brandManager.js",
+        "content/brands/gwm.js",
+        "content/content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html"
+  }
+}
