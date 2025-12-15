@@ -50,26 +50,80 @@ taskSelect.addEventListener("change", function () {
   chrome.storage.local.set({ selectedTask: taskSelect.value });
 });
 
-// Funcao auxiliar para enviar mensagem com retry
-async function sendMessageWithRetry(tabId, message, maxRetries, retryDelay) {
-  maxRetries = maxRetries || 3;
-  retryDelay = retryDelay || 1000;
+// SOLUCAO HIBRIDA: Injeta scripts se necessario
+async function ensureScriptsLoaded(tabId) {
+  try {
+    // ESTRATEGIA 1: Tenta conectar (scripts ja carregados?)
+    const response = await chrome.tabs.sendMessage(tabId, { action: "ping" });
+    if (response && response.pong) {
+      return { method: "already-loaded", success: true };
+    }
+  } catch (error) {
+    // Scripts nao estao carregados, vamos injetar
+  }
 
-  for (let i = 0; i < maxRetries; i++) {
+  try {
+    // ESTRATEGIA 2: Injeta scripts programaticamente
+    addLog("info", "Injetando scripts na pagina...");
+
+    await chrome.scripting.executeScript({
+      target: { tabId: tabId, allFrames: true },
+      files: ["content/brands/brandManager.js"],
+    });
+
+    await chrome.scripting.executeScript({
+      target: { tabId: tabId, allFrames: true },
+      files: ["content/brands/gwm.js"],
+    });
+
+    await chrome.scripting.executeScript({
+      target: { tabId: tabId, allFrames: true },
+      files: ["content/content.js"],
+    });
+
+    // Aguarda scripts inicializarem
+    await new Promise(function (resolve) {
+      setTimeout(resolve, 1000);
+    });
+
+    // Testa se funcionou
     try {
-      const response = await chrome.tabs.sendMessage(tabId, message);
-      return response;
-    } catch (error) {
-      if (i === maxRetries - 1) {
-        throw new Error(
-          "Content script nao esta carregado. Recarregue a pagina (F5) e tente novamente."
-        );
-      }
-      await new Promise(function (resolve) {
-        setTimeout(resolve, retryDelay);
+      const testResponse = await chrome.tabs.sendMessage(tabId, {
+        action: "ping",
       });
+      if (testResponse && testResponse.pong) {
+        addLog("success", "Scripts injetados com sucesso!");
+        return { method: "injected", success: true };
+      }
+    } catch (e) {
+      throw new Error("Injecao falhou");
+    }
+  } catch (error) {
+    // ESTRATEGIA 3: Recarrega pagina (fallback)
+    addLog("warning", "Injecao falhou, recarregando pagina...");
+
+    await chrome.tabs.reload(tabId);
+
+    // Aguarda reload completo
+    await new Promise(function (resolve) {
+      setTimeout(resolve, 3000);
+    });
+
+    // Testa se funcionou
+    try {
+      const testResponse = await chrome.tabs.sendMessage(tabId, {
+        action: "ping",
+      });
+      if (testResponse && testResponse.pong) {
+        addLog("success", "Pagina recarregada com sucesso!");
+        return { method: "reloaded", success: true };
+      }
+    } catch (e) {
+      throw new Error("Falha ao carregar scripts mesmo apos reload");
     }
   }
+
+  throw new Error("Nao foi possivel carregar os scripts");
 }
 
 // Executar Automacao na Aba Atual
@@ -95,18 +149,26 @@ runAutomationBtn.addEventListener("click", async function () {
       return;
     }
 
-    addLog("info", "Conectando com a pagina...");
+    // SOLUCAO HIBRIDA: Garante que scripts estao carregados
+    addLog("info", "Verificando scripts...");
+    const loadResult = await ensureScriptsLoaded(tab.id);
 
-    const response = await sendMessageWithRetry(
-      tab.id,
-      {
-        action: "run-automation",
-        brand: brandSelect.value,
-        task: taskSelect.value,
-      },
-      3,
-      1000
-    );
+    if (loadResult.method === "injected") {
+      addLog("info", "Scripts injetados dinamicamente");
+    } else if (loadResult.method === "reloaded") {
+      addLog("info", "Pagina foi recarregada");
+    } else {
+      addLog("info", "Scripts ja estavam carregados");
+    }
+
+    // Executa automacao
+    addLog("info", "Iniciando automacao...");
+
+    const response = await chrome.tabs.sendMessage(tab.id, {
+      action: "run-automation",
+      brand: brandSelect.value,
+      task: taskSelect.value,
+    });
 
     if (response.success) {
       showStatus("success", "Automacao concluida com sucesso!");
@@ -166,16 +228,14 @@ runAllTabsBtn.addEventListener("click", async function () {
       try {
         addLog("info", "Processando: " + tab.title);
 
-        const response = await sendMessageWithRetry(
-          tab.id,
-          {
-            action: "run-automation",
-            brand: brandSelect.value,
-            task: taskSelect.value,
-          },
-          3,
-          1000
-        );
+        // SOLUCAO HIBRIDA: Garante scripts em cada aba
+        const loadResult = await ensureScriptsLoaded(tab.id);
+
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          action: "run-automation",
+          brand: brandSelect.value,
+          task: taskSelect.value,
+        });
 
         if (response.success) {
           success++;

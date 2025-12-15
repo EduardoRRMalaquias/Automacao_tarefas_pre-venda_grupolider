@@ -122,16 +122,21 @@
       let firstName = (firstNameInput.value || "").trim();
       let lastName = (lastNameInput.value || "").trim();
 
-      if (firstName && !lastName) {
-        const parts = firstName.split(/\s+/);
-        firstName = parts[0];
-        lastName = parts.slice(1).join(" ");
-      }
+      const partsFirstName = firstName.split(/\s+/);
+      const partsLastName = lastName.split(/\s+/);
 
-      if (!firstName && lastName) {
-        const parts = lastName.split(/\s+/);
-        firstName = parts[0];
-        lastName = parts.slice(1).join(" ");
+      if (partsFirstName.length > 1 || partsLastName.length > 1) {
+        if (firstName && !lastName) {
+          firstName = partsFirstName[0];
+          lastName = partsFirstName.slice(1).join(" ");
+        }
+
+        if (!firstName && lastName) {
+          firstName = partsLastName[0];
+          lastName = partsLastName.slice(1).join(" ");
+        }
+      } else {
+        lastName = partsFirstName[0] + partsLastName[0];
       }
 
       firstName = firstName.toUpperCase();
@@ -517,7 +522,9 @@
 
         await activateEditMode(logs);
         const nameResult = await formatLeadName(logs);
-        const firstName = nameResult.firstName;
+        const firstName = nameResult.firstName
+          ? nameResult.firstName
+          : nameResult.lastName;
         await formatPhoneNumber(logs);
         await fillInterestFields(logs);
         const modelo = await formatModeloInteresse(logs);
