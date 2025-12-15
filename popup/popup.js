@@ -1,3 +1,4 @@
+// popup.js
 // Elementos do DOM
 const operadorInput = document.getElementById("operador");
 const saveOperadorBtn = document.getElementById("saveOperador");
@@ -50,80 +51,27 @@ taskSelect.addEventListener("change", function () {
   chrome.storage.local.set({ selectedTask: taskSelect.value });
 });
 
-// SOLUCAO HIBRIDA: Injeta scripts se necessario
+// SOLUÇÃO HÍBRIDA - Melhor dos dois mundos
 async function ensureScriptsLoaded(tabId) {
+  // 1. Verifica se já está carregado (manifest injetou)
   try {
-    // ESTRATEGIA 1: Tenta conectar (scripts ja carregados?)
     const response = await chrome.tabs.sendMessage(tabId, { action: "ping" });
-    if (response && response.pong) {
-      return { method: "already-loaded", success: true };
-    }
-  } catch (error) {
-    // Scripts nao estao carregados, vamos injetar
-  }
+    if (response.pong) return { method: "already-loaded", success: true };
+  } catch {}
 
+  // 2. Se não, INJETA manualmente
   try {
-    // ESTRATEGIA 2: Injeta scripts programaticamente
-    addLog("info", "Injetando scripts na pagina...");
-
     await chrome.scripting.executeScript({
-      target: { tabId: tabId, allFrames: true },
-      files: ["content/brands/brandManager.js"],
+      target: { tabId, allFrames: true },
+      files: ["content/brands/brandManager.js", "content/brands/gwm.js", "content/content.js"]
     });
+    return { method: "injected", success: true };
+  } catch {}
 
-    await chrome.scripting.executeScript({
-      target: { tabId: tabId, allFrames: true },
-      files: ["content/brands/gwm.js"],
-    });
-
-    await chrome.scripting.executeScript({
-      target: { tabId: tabId, allFrames: true },
-      files: ["content/content.js"],
-    });
-
-    // Aguarda scripts inicializarem
-    await new Promise(function (resolve) {
-      setTimeout(resolve, 1000);
-    });
-
-    // Testa se funcionou
-    try {
-      const testResponse = await chrome.tabs.sendMessage(tabId, {
-        action: "ping",
-      });
-      if (testResponse && testResponse.pong) {
-        addLog("success", "Scripts injetados com sucesso!");
-        return { method: "injected", success: true };
-      }
-    } catch (e) {
-      throw new Error("Injecao falhou");
-    }
-  } catch (error) {
-    // ESTRATEGIA 3: Recarrega pagina (fallback)
-    addLog("warning", "Injecao falhou, recarregando pagina...");
-
-    await chrome.tabs.reload(tabId);
-
-    // Aguarda reload completo
-    await new Promise(function (resolve) {
-      setTimeout(resolve, 3000);
-    });
-
-    // Testa se funcionou
-    try {
-      const testResponse = await chrome.tabs.sendMessage(tabId, {
-        action: "ping",
-      });
-      if (testResponse && testResponse.pong) {
-        addLog("success", "Pagina recarregada com sucesso!");
-        return { method: "reloaded", success: true };
-      }
-    } catch (e) {
-      throw new Error("Falha ao carregar scripts mesmo apos reload");
-    }
-  }
-
-  throw new Error("Nao foi possivel carregar os scripts");
+  // 3. Se falhar, RECARREGA a página
+  await chrome.tabs.reload(tabId);
+  await sleep(3000);
+  return { method: "reloaded", success: true };
 }
 
 // Executar Automacao na Aba Atual

@@ -1,3 +1,4 @@
+// content.js
 // ========== Content Script Principal ==========
 
 (function () {

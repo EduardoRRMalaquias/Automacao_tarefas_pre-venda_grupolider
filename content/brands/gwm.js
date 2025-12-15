@@ -179,7 +179,7 @@
         return null;
       }
 
-      phoneNumber = phoneNumber.replace(/^\+?55/, "").trim();
+      phoneNumber = phoneNumber.replace(/^\+?55/, "").replace(/\D/g, '').trim();
 
       mobileInput.value = phoneNumber;
       fireInputEvents(mobileInput);
@@ -294,7 +294,7 @@
         return null;
       }
 
-      modelo = modelo.toUpperCase();
+      modelo = modelo.replace(/_/g, ' ').toUpperCase();
 
       modeloTextarea.value = modelo;
       fireInputEvents(modeloTextarea);
@@ -347,7 +347,7 @@
       logs.push(log("success", "Campo 2 preenchido: " + operador));
 
       const campo3 = await waitForElement('input[data-id="3"]', 5000);
-      campo3.value = modelo || "VEICULO";
+      campo3.value = modelo || "HAVAL H6";
       fireInputEvents(campo3);
       await sleep(200);
       logs.push(log("success", "Campo 3 preenchido: " + (modelo || "VEICULO")));
