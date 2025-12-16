@@ -11,64 +11,67 @@
 <body>
   <div class="container">
     <header>
-      <h1>🚗 GWM Lead Automation</h1>
-      <p class="subtitle">Grupo Líder - Assistente de Leads</p>
+      <img src="" alt="">
+      <h1>Automatização de tarefas grupolíder</h1>
     </header>
 
     <main>
       <!-- Configuração do Operador -->
-      <section class="config-section">
-        <label for="operador">👤 Nome do Operador:</label>
-        <input type="text" id="operador" placeholder="Digite seu nome" maxlength="50">
-        <button id="saveOperador" class="btn-secondary">Salvar Nome</button>
-        <p class="help-text">Será usado no template de mensagem</p>
+      <section>
+        <article class="config-section">
+          <label for="operador">👤 Nome do Operador:</label>
+          <input type="text" id="operador" placeholder="Digite seu nome" maxlength="50">
+          <button id="saveOperador" class="btn-secondary">Salvar Nome</button>
+        </article>
+        <!-- Seleção de Marca -->
+        <article class="brand-section">
+          <label for="brand">🚗 Marca:</label>
+          <select id="brand">
+            <option value="gwm">GWM</option>
+          </select>
+        </article>
+        <!-- Seleção de Tarefa -->
+        <article class="task-section">
+          <label for="task">📋 Tarefa:</label>
+          <select id="task">
+            <option value="primeiro-contato">Primeiro Contato</option>
+          </select>
+        </article>
       </section>
 
-      <!-- Seleção de Marca -->
-      <section class="brand-section">
-        <label for="brand">🏭 Marca:</label>
-        <select id="brand">
-          <option value="gwm">GWM</option>
-        </select>
-      </section>
-
-      <!-- Seleção de Tarefa -->
-      <section class="task-section">
-        <label for="task">📋 Tarefa:</label>
-        <select id="task">
-          <option value="primeiro-contato">Primeiro Contato</option>
-        </select>
-      </section>
-
-      <!-- Status -->
-      <section class="status-section">
-        <div id="status" class="status hidden">
-          <span class="status-icon">⏳</span>
-          <span class="status-text">Aguardando...</span>
-        </div>
-      </section>
-
-      <!-- Botões de Ação -->
-      <section class="actions">
-        <button id="runAutomation" class="btn-primary">
-          ▶️ Executar Automação
-        </button>
-        <button id="runAllTabs" class="btn-secondary">
-          🔄 Executar em Todas as Abas
-        </button>
-      </section>
-
-      <!-- Logs -->
-      <section class="logs-section">
-        <h3>📊 Logs da Última Execução</h3>
-        <div id="logs" class="logs"></div>
+      <section>
+        <!-- Status -->
+        <article class="status-section">
+          <div id="status" class="status hidden"> 
+            <span class="status-icon">⏳</span>
+            <span class="status-text">Aguardando...</span>
+          </div>
+        </article>
+        <!-- Botões de Ação -->
+        <article class="actions">
+          <button id="runAutomation" class="btn-primary">
+            ▶️ Executar Automação
+          </button>
+          <button id="runAllTabs" class="btn-secondary">
+            🔄 Executar em Todas as Abas
+          </button>
+        </article>
       </section>
     </main>
 
-    <footer>
-      <p>v1.0.1 | MVP - GWM Primeiro Contato</p>
-    </footer>
+    <!-- Logs -->
+    <section class="logs-section">
+        <h3>📊 Logs da Última Execução</h3>
+        <div id="logs" class="logs"></div>
+    </section>
+
+  
   </div>
+
+    <footer>
+      <p>Desenvolvido por - Eduardo Rodrigues Rangel Malaquuias</p>
+      <p>© - GrupoLider 2025</p>
+    </footer>
 
   <script src="popup.js"></script>
 </body>
