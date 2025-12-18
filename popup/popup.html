@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GWM Lead Automation</title>
+  <title>Automação de Tarefas GrupoLider</title>
+  <meta name="description" content="Extenção que automatiza tarefas para os operadores de Lead das marcas pertecentes a empresa GrupoLider">
   <link rel="stylesheet" href="popup.css">
 </head>
 
@@ -16,56 +17,56 @@
     </header>
 
     <main>
-      <!-- Configuração do Operador -->
       <section>
         <article class="config-section">
           <label for="operador">👤 Nome do Operador:</label>
           <input type="text" id="operador" placeholder="Digite seu nome" maxlength="50">
-          <button id="saveOperador" class="btn-secondary">Salvar Nome</button>
+          <button id="savarOperador" class="botao-secondario">Salvar Nome</button>
         </article>
-        <!-- Seleção de Marca -->
-        <article class="brand-section">
-          <label for="brand">🚗 Marca:</label>
-          <select id="brand">
+
+
+        <article class="secao-marca">
+          <label for="marca">🚗 Marca:</label>
+          <select id="marca">
             <option value="gwm">GWM</option>
           </select>
         </article>
-        <!-- Seleção de Tarefa -->
-        <article class="task-section">
-          <label for="task">📋 Tarefa:</label>
-          <select id="task">
+
+
+        <article class="secao-tarefa">
+          <label for="tarefa">📋 Tarefa:</label>
+          <select id="tarefa">
             <option value="primeiro-contato">Primeiro Contato</option>
           </select>
         </article>
       </section>
 
       <section>
-        <!-- Status -->
-        <article class="status-section">
+
+        <article class="secao-status">
           <div id="status" class="status hidden"> 
-            <span class="status-icon">⏳</span>
-            <span class="status-text">Aguardando...</span>
+            <span class="icone-status">⏳</span>
+            <span class="texto-status">Aguardando...</span>
           </div>
         </article>
-        <!-- Botões de Ação -->
-        <article class="actions">
-          <button id="runAutomation" class="btn-primary">
+
+
+        <article class="acoes">
+          <button id="rodarAutomacao" class="botao-primario">
             ▶️ Executar Automação
           </button>
-          <button id="runAllTabs" class="btn-secondary">
+          <button id="rodarTodasAbas" class="botao-primario">
             🔄 Executar em Todas as Abas
           </button>
         </article>
       </section>
     </main>
 
-    <!-- Logs -->
-    <section class="logs-section">
+
+    <section class="secao-logs">
         <h3>📊 Logs da Última Execução</h3>
         <div id="logs" class="logs"></div>
     </section>
-
-  
   </div>
 
     <footer>

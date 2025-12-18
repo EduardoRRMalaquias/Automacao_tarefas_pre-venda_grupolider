@@ -78,14 +78,8 @@ select:hover {
   outline: #0B5CAB;
 }
 
-.help-text {
-  font-size: 11px;
-  color: #888;
-  margin-top: 5px;
-}
-
-.btn-primary,
-.btn-secondary {
+.botao-primario,
+.botao-secondario {
   width: 100%;
   padding: 8px;
   border: none;
@@ -97,43 +91,44 @@ select:hover {
   margin-bottom: 20;
 }
 
-.btn-primary {
+.botao-primario {
   background-color: #0176D3;
   color: white;
+  margin-bottom: 4px;
 }
 
-.btn-primary:hover {
+.botao-primario:hover {
   background-color: #0B5CAB;
 }
 
-.btn-primary:active {
+.botao-primario:active {
   border-color:white;
   outline: #0B5CAB;
 }
 
-.btn-secondary {
+.botao-secondario {
   background: #fff;
   border: 1px solid #9C9C9C;
   color: #0176D3;
   
 }
 
-.btn-secondary:hover {
+.botao-secondario:hover {
   background: #F3F3F3;
 }
 
-.btn-secondary:active {
+.botao-secondario:active {
   outline: #0B5CAB;
 }
 
-.btn-primary:disabled,
-.btn-secondary:disabled {
+.botao-primario:disabled,
+.botao-secondario:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-.status-section {
+.secao-status {
   min-height: 50px;
 }
 
@@ -168,11 +163,11 @@ select:hover {
   color: #721c24;
 }
 
-.status-icon {
+.icone-status {
   font-size: 18px;
 }
 
-.logs-section h3 {
+.secao-logs h3 {
   font-size: 14px;
   margin-bottom: 10px;
   color: #072F57;
@@ -196,21 +191,21 @@ select:hover {
   font-style: italic;
 }
 
-.log-entry {
+.entrada-log {
   margin-bottom: 5px;
   padding: 4px;
   border-radius: 3px;
 }
 
-.log-entry.success {
+.entrada-log.success {
   color: #28a745;
 }
 
-.log-entry.error {
+.entrada-log.error {
   color: #dc3545;
 }
 
-.log-entry.info {
+.entrada-log.info {
   color: #17a2b8;
 }
 

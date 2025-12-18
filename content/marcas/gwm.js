@@ -365,9 +365,10 @@
       await clickElement(sendBtn, 2000);
       logs.push(log("success", "Template enviado"));
 
-      await sleep(1500);
-      const messageEl = await waitForElement('p[data-id="message-text"]', 8000);
-      const message = messageEl.textContent.trim();
+      await sleep(3000);
+      const messagems = document.querySelectorAll('p[data-id="message-text"]');
+      const messagemsElemento = messagems[messagems.length-1];
+      const message = messagemsElemento.textContent.trim();
       logs.push(log("success", "Mensagem capturada"));
 
       return message;
