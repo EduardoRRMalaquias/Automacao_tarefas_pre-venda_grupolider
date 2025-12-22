@@ -145,19 +145,19 @@ select:hover {
   display: none;
 }
 
-.status.loading {
+.status.carregando {
   background: #fff3cd;
   border: 1px solid #ffc107;
   color: #856404;
 }
 
-.status.success {
+.status.sucesso {
   background: #d4edda;
   border: 1px solid #28a745;
   color: #155724;
 }
 
-.status.error {
+.status.erro {
   background: #f8d7da;
   border: 1px solid #dc3545;
   color: #721c24;
@@ -197,11 +197,11 @@ select:hover {
   border-radius: 3px;
 }
 
-.entrada-log.success {
+.entrada-log.sucesso {
   color: #28a745;
 }
 
-.entrada-log.error {
+.entrada-log.erro {
   color: #dc3545;
 }
 

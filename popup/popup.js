@@ -30,12 +30,12 @@ botaoSalvarOperador.addEventListener("click", function () {
   const nome = operadorInput.value.trim();
 
   if (!nome) {
-    exibirStatus("error", "Digite um nome valido");
+    exibirStatus("erro", "Digite um nome valido");
     return;
   }
 
   chrome.storage.local.set({ operador: nome }, function () {
-    exibirStatus("success", "Nome salvo com sucesso!");
+    exibirStatus("sucesso", "Nome salvo com sucesso!");
     setTimeout(function () {
       ocultarStatus();
     }, 2000);
@@ -55,8 +55,8 @@ selectTarefa.addEventListener("change", function () {
 async function garantirCarregamentoScripts(tabId){
     // Verificar se script esta carregado
     try{
-        const resposta = await chrome.tabs.sendMenssage(tabId, {action: 'ping'});
-        if(resposta.pong) return { metodo: "script-carregado", successo: true}
+        const resposta = await chrome.tabs.sendMenssage(tabId, {acao: 'ping'});
+        if(resposta.pong) return { metodo: "script-carregado", sucesso: true}
     }catch{}
 
     // Injetar script se não estiver carregado
@@ -78,31 +78,31 @@ botaoRodarAutomacao.addEventListener("click", async function () {
   const operador = operadorInput.value.trim();
 
   if (!operador) {
-    exibirStatus("error", "Configure o nome do operador primeiro");
+    exibirStatus("erro", "Configure o nome do operador primeiro");
     return;
   }
 
   try {
     exibirStatus("loading", "Executando automacao...");
-    desabilitarButões();
+    desabilitarButoes();
     limparLogs();
 
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const tab = tabs[0];
 
     if (!tab.url.includes("lightning.force.com/lightning/r/Lead/")) {
-      exibirStatus("error", "Abra uma pagina de Lead do Salesforce");
+      exibirStatus("erro", "Abra uma pagina de Lead do Salesforce");
       habilitarButões();
       return;
     }
 
     // SOLUCAO HIBRIDA: Garante que scripts estao carregados
     adicionarLog("info", "Verificando scripts...");
-    const loadResult = await ensureScriptsLoaded(tab.id);
+    const resultadoCarregamento = await garantirCarregamentoScripts(tab.id);
 
-    if (loadResult.metodo === "injetado") {
+    if (resultadoCarregamento.metodo === "injetado") {
       adicionarLog("info", "Scripts injetados dinamicamente");
-    } else if (loadResult.metodo === "recarregado") {
+    } else if (resultadoCarregamento.metodo === "recarregado") {
       adicionarLog("info", "Pagina foi recarregada");
     } else {
       adicionarLog("info", "Scripts ja estavam carregados");
@@ -112,13 +112,13 @@ botaoRodarAutomacao.addEventListener("click", async function () {
     adicionarLog("info", "Iniciando automacao...");
 
     const response = await chrome.tabs.sendMessage(tab.id, {
-      action: "run-automation",
-      brand: selectMarca.value,
-      task: selectTarefa.value,
+      acao: "rodar-automacao",
+      marca: selectMarca.value,
+      tarefa: selectTarefa.value,
     });
 
     if (response.success) {
-      exibirStatus("success", "Automacao concluida com sucesso!");
+      exibirStatus("sucesso", "Automacao concluida com sucesso!");
       exibirLogs(response.logs);
       chrome.storage.local.set({ ultimosLogs: response.logs });
 
@@ -130,27 +130,27 @@ botaoRodarAutomacao.addEventListener("click", async function () {
         }
       }, 2000);
     } else {
-      exibirStatus("error", "Erro: " + response.error);
+      exibirStatus("erro", "Erro: " + response.error);
       exibirLogs(response.logs || []);
     }
   } catch (error) {
-    exibirStatus("error", "Erro: " + error.message);
-    adicionarLog("error", error.message);
+    exibirStatus("erro", "Erro: " + error.message);
+    adicionarLog("erro", error.message);
   } finally {
-    enableButtons();
+    desabilitarButoes();
   }
 });
 
 // Funcoes de UI
-function exibirStatus(tipo, messagem) {
-  statusDiv.classList.remove("hidden", "loading", "success", "error");
+function exibirStatus(tipo, menssagem) {
+  statusDiv.classList.remove("hidden", "carregando", "sucesso", "erro");
   statusDiv.classList.add(tipo);
-  textoStatus.textContent = messagem;
+  textoStatus.textContent = menssagem;
 
   const icones = {
-    loading: "⏳",
-    success: "✅",
-    error: "❌",
+    carregando: "⏳",
+    sucesso: "✅",
+    erro: "❌",
   };
   Iconestatus.textContent = icones[tipo] || "📋";
 }
@@ -159,7 +159,7 @@ function ocultarStatus() {
   statusDiv.classList.add("hidden");
 }
 
-function desabilitarButões() {
+function desabilitarButoes() {
   botaoRodarAutomacao.disabled = true;
   botoaoRodarTodasAbas.disabled = true;
 }

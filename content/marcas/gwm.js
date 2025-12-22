@@ -1,573 +1,547 @@
-// Configuracao da Marca GWM - ARQUIVO COMPLETO CORRIGIDO
+(()=>{ "use strict";
 
-(function () {
-  "use strict";
+    //Ultilitarios
+    const esperar = (tempo) => {
+        return new Promise((resolver) => {
+            setTimeout(resolver, tempo);
+        });
+    };
 
-  // Utilitarios Globais
-  const sleep = function (ms) {
-    return new Promise(function (resolve) {
-      setTimeout(resolve, ms);
-    });
-  };
-
-  const log = function (type, message) {
-    const prefix =
-      {
-        info: "📋",
-        success: "✅",
-        error: "❌",
-        warning: "⚠️",
-      }[type] || "📋";
-    console.log(prefix + " " + message);
-    return { type: type, message: message };
-  };
-
-  const waitForElement = function (selector, timeout) {
-    timeout = timeout || 10000;
-    return new Promise(function (resolve, reject) {
-      const el = document.querySelector(selector);
-      if (el) return resolve(el);
-
-      const observer = new MutationObserver(function () {
-        const e = document.querySelector(selector);
-        if (e) {
-          observer.disconnect();
-          resolve(e);
-        }
-      });
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-      });
-
-      setTimeout(function () {
-        observer.disconnect();
-        reject(new Error("Timeout ao esperar: " + selector));
-      }, timeout);
-    });
-  };
-
-  const fireInputEvents = function (element) {
-    element.dispatchEvent(new Event("input", { bubbles: true }));
-    element.dispatchEvent(new Event("change", { bubbles: true }));
-    element.dispatchEvent(new Event("blur", { bubbles: true }));
-    element.dispatchEvent(new Event("keyup", { bubbles: true }));
-  };
-
-  const clickElement = async function (element, waitMs) {
-    waitMs = waitMs || 300;
-    element.click();
-    await sleep(waitMs);
-  };
-
-  // Funcoes de Manipulacao do Lead
-
-  async function activateEditMode(logs) {
-    logs.push(log("info", "Ativando modo de edicao..."));
-
-    try {
-      const editButton = await waitForElement(
-        'button.inline-edit-trigger[title*="Editar"]',
-        5000
-      );
-      await clickElement(editButton);
-      logs.push(log("success", "Modo de edicao ativado"));
-      await sleep(1000);
-      return true;
-    } catch (error) {
-      logs.push(log("error", "Falha ao ativar edicao: " + error.message));
-      return false;
+    const log = (tipo, mensagem) => {
+        const legenda = {
+            info: "📋",
+            sucesso: "✅",
+            erro: "❌",
+            alerta: "⚠️",
+        }[tipo] || "📋";
+         console.log(legenda + " " + mensagem);
+         return { tipo, mensagem }
     }
-  }
 
-  async function saveDesactivateEditMode(logs) {
-    logs.push(
-      log("info", "Salvando alterações e desativando modo de edicao...")
-    );
+    const esperarElemento = (seletor, tempo = 10000) => {
+        return new Promise((resolver, rejeitar) => {
+            const elemento = document.querySelector(seletor);
 
-    try {
-      const saveEditButton = await waitForElement(
-        'lightning-button button[name="SaveEdit"]',
-        5000
-      );
-      await clickElement(saveEditButton);
-      logs.push(
-        log("success", "Alterações salvas e modo de edicao desativado")
-      );
-      await sleep(1000);
-      return true;
-    } catch (error) {
-      logs.push(
-        log(
-          "error",
-          "Falha ao salvar alterações ou desativar edicao: " + error.message
-        )
-      );
-      return false;
+            if (elemento) return resolver(elemento);
+
+            const observador = new MutationObserver(() => {
+                const elementoObservado = document.querySelector(seletor);
+
+                if(elementoObservado){
+                    observador.disconnect();
+                    resolver(elementoObservado)
+                }
+
+            });
+
+
+            observador.observe(document.body, {
+                childList: true,
+                subtree: true,
+            });
+
+
+            setTimeout(() => {
+                observador.disconnect();
+                rejeitar(new Error(`Demorou demais ao esperar o elemento ${elemento}`))
+            }, tempo)
+
+        })
+    };
+
+
+    const ativarEventosInputs = (elemento) => {
+        elemento.dispatchEvent(new Event('input', { bubbles: true }));
+        elemento.dispatchEvent(new Event('change', { bubbles: true }));
+        elemento.dispatchEvent(new Event('blur', { bubbles: true }));
+        elemento.dispatchEvent(new Event('keyup', { bubbles: true }));
+    };
+
+    const clicarElemento = async (elemento, tempo = 300) => {
+        console.log(elemento);
+        elemento.click();
+        await esperar(300);
     }
-  }
 
-  async function formatLeadName(logs) {
-    logs.push(log("info", "Formatando nome do lead..."));
+    // funçoes de Manipulação da pagina
+    async function ativarModoEdicao(logs){
+        logs.push(log("info", "Ativando modo de edição..."));
 
-    try {
-      const firstNameInput = document.querySelector('input[name="firstName"]');
-      const lastNameInput = document.querySelector('input[name="lastName"]');
-
-      if (!firstNameInput || !lastNameInput) {
-        throw new Error("Campos de nome nao encontrados");
-      }
-
-      let firstName = (firstNameInput.value || "").trim();
-      let lastName = (lastNameInput.value || "").trim();
-
-      const partsFirstName = firstName.split(/\s+/);
-      const partsLastName = lastName.split(/\s+/);
-
-      if (partsFirstName.length > 1 || partsLastName.length > 1) {
-        if (firstName && !lastName) {
-          firstName = partsFirstName[0];
-          lastName = partsFirstName.slice(1).join(" ");
+        
+        try{
+            const botaoEdicao = await esperarElemento(
+                'button.inline-edit-trigger[title*="Editar"]',
+                5000
+            );
+            await clicarElemento(botaoEdicao);
+            logs.push(log("sucesso", "Modo de edicao ativado"))
+            await esperar(1000);
+            return true
+        }catch(erro){
+            logs.push(log("erro", `Falha ao salvar alterações ou desativar edicao: ${erro.message}`));
+            return false;
         }
 
-        if (!firstName && lastName) {
-          firstName = partsLastName[0];
-          lastName = partsLastName.slice(1).join(" ");
+    }
+
+    async function savlarDesativarModoEdicao(logs){
+        logs.push(log("info", "Salvando alterações e desativando modo de edição"));
+
+        try {
+            const botaoSalvarEdicao = await esperarElemento('lightning-button button[name="SaveEdit"]', 5000);
+
+            if(!botaoSalvarEdicao){
+                throw new Error("Botão de salvar edicao não encontrado");
+            }
+
+            await clicarElemento(botaoSalvarEdicao);
+            logs.push(log('sucesso', "Altyerações salvas e modo de edicao desativado"));
+
+            await esperar(1000);
+            return true
+        } catch (erro) {
+            logs.push(log("erro", `Falha ao salvar alterações ou desativar edição: ${erro.message}`));
+            return false
         }
-      } else {
-        lastName = partsFirstName[0] + partsLastName[0];
-      }
-
-      firstName = firstName.toUpperCase();
-      lastName = lastName.toUpperCase();
-
-      firstNameInput.value = firstName;
-      fireInputEvents(firstNameInput);
-      await sleep(100);
-
-      lastNameInput.value = lastName;
-      fireInputEvents(lastNameInput);
-      await sleep(100);
-
-      logs.push(
-        log("success", "Nome formatado: " + firstName + " " + lastName)
-      );
-      return { firstName: firstName, lastName: lastName };
-    } catch (error) {
-      logs.push(log("error", "Erro ao formatar nome: " + error.message));
-      throw error;
     }
-  }
 
-  async function formatPhoneNumber(logs) {
-    logs.push(log("info", "Formatando telefone..."));
 
-    try {
-      const mobileInput = document.querySelector('input[name="MobilePhone"]');
-      const phoneInput = document.querySelector('input[name="Phone"]');
+    async function formatarNome(logs){
+        logs.push(log("info", "Formatando nome do lead"));
 
-      if (!mobileInput || !phoneInput) {
-        throw new Error("Campos de telefone nao encontrados");
-      }
+        try {
+            const inputPrimeiroNome = document.querySelector('input[name="firstName"]');
+            const inputSobrenome = document.querySelector('input[name="lastName"]');
 
-      let phoneNumber =
-        (mobileInput.value || "").trim() || (phoneInput.value || "").trim();
+            if(!inputPrimeiroNome || !inputSobrenome){
+                throw new Error("Campos de nome nao encontrados");
+            }
 
-      if (!phoneNumber) {
-        logs.push(log("warning", "Nenhum telefone encontrado"));
-        return null;
-      }
+            let primeiroNome = (inputPrimeiroNome.value || "").trim();
+            let sobrenome = (inputSobrenome.value || "").trim();
 
-      phoneNumber = phoneNumber.replace(/^\+?55/, "").replace(/\D/g, '').trim();
+            const partesPrimeirNome = primeiroNome.split(/\s+/);
+            const partesSobrenome = sobrenome.split(/\s+/);
 
-      mobileInput.value = phoneNumber;
-      fireInputEvents(mobileInput);
-      await sleep(100);
+            if(partesPrimeirNome.length > 1 ||  partesSobrenome.length > 1){
+                if(primeiroNome && !sobrenome){
+                    primeiroNome = partesPrimeirNome[0];
+                    sobrenome = partesPrimeirNome.slice(1).join(" ");
+                }
 
-      if (phoneInput.value) {
-        phoneInput.value = "";
-        fireInputEvents(phoneInput);
-      }
+                if(!primeiroNome && sobrenome){
+                    primeiroNome = partesSobrenome[0];
+                    sobrenome = partesSobrenome.slice(1).join(" ");
+                }
+            }else{
+                sobrenome = partesPrimeirNome[0] + partesSobrenome[0];
+            }
 
-      logs.push(log("success", "Telefone formatado: " + phoneNumber));
-      return phoneNumber;
-    } catch (error) {
-      logs.push(log("error", "Erro ao formatar telefone: " + error.message));
-      throw error;
-    }
-  }
 
-  async function selectComboboxOption(
-    buttonSelector,
-    optionText,
-    logs,
-    labelText
-  ) {
-    try {
-      const button = await waitForElement(buttonSelector, 5000);
-      await clickElement(button, 500);
+            primeiroNome = primeiroNome.toUpperCase();
+            sobrenome = sobrenome.toUpperCase();
 
-      await sleep(500);
+            inputPrimeiroNome.value = primeiroNome;
+            ativarEventosInputs(inputPrimeiroNome);
+            await esperar(100);
 
-      const options = Array.from(
-        document.querySelectorAll(
-          'lightning-base-combobox-item, [role="option"]'
-        )
-      );
-      const option = options.find(function (opt) {
-        const text = (opt.textContent || "").trim().toUpperCase();
-        return text === optionText.toUpperCase();
-      });
+            inputSobrenome.value = sobrenome;
+            ativarEventosInputs(inputSobrenome);
+            await esperar(100);
 
-      if (!option) {
-        throw new Error('Opcao "' + optionText + '" nao encontrada');
-      }
 
-      await clickElement(option);
-      logs.push(log("success", labelText + " selecionado: " + optionText));
-      return true;
-    } catch (error) {
-      logs.push(
-        log("error", "Erro ao selecionar " + labelText + ": " + error.message)
-      );
-      throw error;
-    }
-  }
-
-  async function fillInterestFields(logs) {
-    logs.push(log("info", "Preenchendo campos de interesse..."));
-
-    try {
-      // Marca: GWM
-      await selectComboboxOption(
-        'button[role="combobox"][aria-label="Marca"]',
-        "GWM",
-        logs,
-        "Marca"
-      );
-      await sleep(500);
-
-      // Categoria: Novos - CORRIGIDO
-      await selectComboboxOption(
-        'button[role="combobox"][aria-label="Categoria"]',
-        "Novos",
-        logs,
-        "Categoria"
-      );
-      await sleep(500);
-
-      // Interesse em: Carros
-      await selectComboboxOption(
-        'button[role="combobox"][aria-label="Interesse em"]',
-        "Carros",
-        logs,
-        "Interesse em"
-      );
-      await sleep(500);
-
-      logs.push(log("success", "Campos de interesse preenchidos"));
-      return true;
-    } catch (error) {
-      logs.push(log("error", "Erro ao preencher interesse: " + error.message));
-      throw error;
-    }
-  }
-
-  async function formatModeloInteresse(logs) {
-    logs.push(log("info", "Formatando modelo de interesse..."));
-
-    try {
-      const modeloTextarea = document.querySelector(
-        'textarea[id*="input-"][maxlength="255"]'
-      );
-
-      if (!modeloTextarea) {
-        logs.push(log("warning", "Campo Modelo interesse nao encontrado"));
-        return null;
-      }
-
-      let modelo = (modeloTextarea.value || "").trim();
-
-      if (!modelo) {
-        logs.push(log("warning", "Modelo interesse vazio"));
-        return null;
-      }
-
-      modelo = modelo.replace(/_/g, ' ').toUpperCase();
-
-      modeloTextarea.value = modelo;
-      fireInputEvents(modeloTextarea);
-      await sleep(100);
-
-      logs.push(log("success", "Modelo formatado: " + modelo));
-      return modelo;
-    } catch (error) {
-      logs.push(log("error", "Erro ao formatar modelo: " + error.message));
-      throw error;
-    }
-  }
-
-  async function sendWhatsAppTemplate(firstName, modelo, operador, logs) {
-    logs.push(log("info", "Enviando template WhatsApp..."));
-
-    try {
-      const selectTemplateBtn = await waitForElement("p.center-button", 5000);
-      await clickElement(selectTemplateBtn, 800);
-      logs.push(log("success", "Botao de template clicado"));
-
-      await sleep(500);
-      const folderBtn = await waitForElement(
-        'p[data-folder-name="GW LIDER TEMPLATE"]',
-        5000
-      );
-      await clickElement(folderBtn, 800);
-      logs.push(log("success", "Pasta GW LIDER TEMPLATE aberta"));
-
-      await sleep(500);
-      const templateBtn = await waitForElement(
-        'p[data-message-id="a0EU6000003BVunMAG"]',
-        5000
-      );
-      await clickElement(templateBtn, 1000);
-      logs.push(log("success", "Template SAUDACAO GW 2 selecionado"));
-
-      await sleep(800);
-
-      const campo1 = await waitForElement('input[data-id="1"]', 5000);
-      campo1.value = firstName + " ";
-      fireInputEvents(campo1);
-      await sleep(200);
-      logs.push(log("success", "Campo 1 preenchido: " + firstName));
-
-      const campo2 = await waitForElement('input[data-id="2"]', 5000);
-      campo2.value = operador;
-      fireInputEvents(campo2);
-      await sleep(200);
-      logs.push(log("success", "Campo 2 preenchido: " + operador));
-
-      const campo3 = await waitForElement('input[data-id="3"]', 5000);
-      campo3.value = modelo || "HAVAL H6";
-      fireInputEvents(campo3);
-      await sleep(200);
-      logs.push(log("success", "Campo 3 preenchido: " + (modelo || "VEICULO")));
-
-      const sendBtn = Array.from(document.querySelectorAll("button")).find(
-        function (btn) {
-          return btn.textContent.includes("Enviar");
+            logs.push(log("sucesso", "Nome formatado: " + primeiroNome + " " + sobrenome));
+            return { primeiroNome, sobrenome };
+        } catch (error) {
+            logs.push("sucesso", `Erro ao formatar nome: ${error.message}`);
+            throw error;
         }
-      );
-
-      if (!sendBtn) {
-        throw new Error("Botao Enviar nao encontrado");
-      }
-
-      await clickElement(sendBtn, 2000);
-      logs.push(log("success", "Template enviado"));
-
-      await sleep(3000);
-      const messagems = document.querySelectorAll('p[data-id="message-text"]');
-      const messagemsElemento = messagems[messagems.length-1];
-      const message = messagemsElemento.textContent.trim();
-      logs.push(log("success", "Mensagem capturada"));
-
-      return message;
-    } catch (error) {
-      logs.push(log("error", "Erro ao enviar template: " + error.message));
-      throw error;
     }
-  }
 
-  async function createTask(message, logs) {
-    logs.push(log("info", "Criando tarefa..."));
+    async function formatarNumeroTelefone(logs){
+        logs.push(log("info", "Formatando telefone..."));
 
-    try {
-      const newTaskBtn = await waitForElement(
-        'button[aria-label="Nova tarefa"]',
-        5000
-      );
-      await clickElement(newTaskBtn, 1500);
-      logs.push(log("success", "Modal de tarefa aberto"));
+        try{
+            const inputCelular = document.querySelector('input[name="MobilePhone"]');
+            const inputTelefone = document.querySelector('input[name="Phone"]');
 
-      await sleep(1000);
+            if(!inputCelular || !inputTelefone){
+                throw new Error("Campos de telefone não encontrados");
+            }
 
-      const tipoCombobox = await waitForElement(
-        'a[role="combobox"][aria-labelledby*="label"]',
-        5000
-      );
-      await clickElement(tipoCombobox, 500);
+            let numeroTelefone = (inputCelular.value || "").trim() || (inputCelular.value || "").trim()
 
-      const tipoOption = Array.from(
-        document.querySelectorAll(".uiMenuItem a")
-      ).find(function (a) {
-        return (a.textContent || "").trim() === "Contato";
-      });
+            if(!numeroTelefone){
+                logs.push(log('alerta', "Nenhum telefone encontrado"));
+                 return null;
+            }
 
-      if (tipoOption) {
-        await clickElement(tipoOption, 500);
-        logs.push(log("success", "Tipo selecionado: Contato"));
-      }
+            numeroTelefone = numeroTelefone.replace(/^\+?55/, "").replace(/\D/g, '').trim();
 
-      await sleep(500);
-      const assuntoInput = document.querySelector(
-        'lightning-grouped-combobox [role="combobox"]'
-      );
+            inputCelular.value = numeroTelefone;
+            ativarEventosInputs(inputCelular);
+            await esperar(100);
 
-      if (assuntoInput) {
-        assuntoInput.value = "Primeiro Contato";
-        fireInputEvents(assuntoInput);
-        await sleep(500);
+            if(inputTelefone.value){
+                inputTelefone.value = 0;
+                ativarEventosInputs(inputTelefone);
+            }
 
-        const assuntoOption = Array.from(
-          document.querySelectorAll("lightning-base-combobox-item")
-        ).find(function (item) {
-          return item.textContent.includes("Primeiro Contato");
+            logs.push(log('sucesso', `Telefone formatado: ${numeroTelefone}`))
+            return numeroTelefone;
+        }catch (erro){
+            logs.push(log("erro", `Erro ao formatar telefone: ${erro.message}`));
+            throw erro;
+        }
+    }
+
+
+    async function selecionarOpcaoCombobox(seletorBotao, seletorOpcoes, opcaoTexto, logs, label){
+        try {
+            const botao = await esperarElemento(seletorBotao, 5000)
+            await clicarElemento(botao, 500);
+
+            await esperar(500);
+
+            const opcoes = Array.from (
+                document.querySelectorAll(seletorOpcoes)
+            );
+
+            const opcao = opcoes.find((opcao) => {
+                const texto = (opcao.textContent || "").trim().toLocaleUpperCase();
+                return texto === opcaoTexto.toLocaleUpperCase();
+            });
+
+            if(!opcao){
+                throw new Error(`Opcao ${opcaoTexto} nao encontrada`)
+            }
+
+            await clicarElemento(opcao);
+            logs.push(log('sucesso', `${label} selecionado: ${opcaoTexto}`))
+
+            await esperar(500);
+
+            return true;
+        } catch (error) {
+            logs.push(log("erro", `Erro ao selecionar  ${label}: ${error.message}`));
+            throw error;
+        }
+    }
+
+
+    async function preencherInputsInteresses(logs){
+        logs.push(log("info", "Preenchendo campos de intedesse..."));
+
+        try{
+
+            //Selecionar Marca: GWM
+            await selecionarOpcaoCombobox(
+                'button[role="combobox"][aria-label="Marca"]',
+                'lightning-base-combobox-item, [role="option"]',
+                "GWM",
+                logs,
+                "Marca"
+            )
+            await esperar(500);
+
+            // Categoria: Novos
+            await selecionarOpcaoCombobox(
+                'button[role="combobox"][aria-label="Categoria"]',
+                'lightning-base-combobox-item, [role="option"]',
+                "Novos",
+                logs,
+                "Categoria"
+            )
+            await esperar(500);
+
+            // Interesse em: Carros
+            await selecionarOpcaoCombobox(
+                'button[role="combobox"][aria-label="Interesse em"]',
+                'lightning-base-combobox-item, [role="option"]',
+                "Carros",
+                logs,
+                "Interesse em"
+            );
+            await esperar(500)
+
+            logs.push(log(("sucesso", "Campos de interesse preenchidos")));
+            return true;
+        }catch (erro){
+            logs.push(log("erro", `Erro ao preencher interesse: ${erro.message}`));
+            throw erro;
+        }
+    }
+
+
+    async function formatarModeloInteresse(logs){
+        logs.push(log("info", "Formatando modelo de interesse..."));
+
+        try {
+            const modeloTextarea = document.querySelector('textarea[id*="input-"][maxlength="255"]');
+
+            if(!modeloTextarea){
+                logs.push(log("alerta", "Campo Modelo interesse nao encontrado"));
+                return null;
+            }
+
+            let modelo = (modeloTextarea.value || '').trim();
+
+            if(!modelo){
+                logs.push(log("alerta", "Modelo interesse vazio"));
+                return null;
+            }
+
+            modelo = modelo.replace(/_/g, ' ').toUpperCase();
+
+            modeloTextarea.value = modelo;
+            ativarEventosInputs(modeloTextarea);
+            await esperar(100);
+
+            logs.push(log("sucesso", "Modelo formatado: " + modelo));
+            return modelo;
+        } catch (error) {
+            logs.push(log("erro", `Erro ao formatar modelo: " + error.message`));
+            throw error;
+        }
+    }
+
+    async function enviarTamplateWhatsapp(primeiroNome, modelo, operador, logs){
+        logs.push(log("info", "Enviando template WhatsApp..."));
+
+        try {
+            const botaoEnviarTamplate = await esperarElemento("p.center-button", 5000);
+            await clicarElemento(botaoEnviarTamplate, 800);
+            logs.push(log("sucesso", "Botao de template clicado"))
+
+            await esperar(500);
+            const pastaTamplate = await esperarElemento('p[data-folder-name="GW LIDER TEMPLATE"]', 5000)
+            await clicarElemento(pastaTamplate, 800);
+            logs.push(log("sucesso", "Pasta GW LIDER TEMPLATE aberta"));
+
+            await esperar(500);
+            const botaoTamplate = await esperarElemento('p[data-message-id="a0EU6000003BVunMAG"]', 5000);
+            await clicarElemento(botaoTamplate, 1000);
+            logs.push(log("sucesso", "Template SAUDACAO GW 2 selecionado"))
+
+            await esperar(800);
+
+            const campo1 = await esperarElemento('input[data-id="1"]', 5000);
+            campo1.value = primeiroNome + " ";
+            ativarEventosInputs(campo1);
+            await esperar(200);
+            logs.push(log("sucesso", "Campo 1 preenchido: " + primeiroNome));
+
+            const campo2 = await esperarElemento('input[data-id="2"]', 5000);
+            campo1.value = operador
+            ativarEventosInputs(campo2);
+            await esperar(200);
+            logs.push(log("sucesso", "Campo 2 preenchido: " + operador));
+
+            const campo3 = await esperarElemento('input[data-id="3"]', 5000);
+            campo3.value = modelo || "HAVAL H6";
+            ativarEventosInputs(campo3);
+            await esperar(200);
+            logs.push(log("sucesso", "Campo 4 preenchido: " + modelo));
+
+            const botaoEnviar = Array.from(document.querySelectorAll("button").find((botao) => {
+                return botao.textContent.includes("Enviar");
+            }));
+
+            if(!botaoEnviar){
+                throw new Error("Botao Enviar nao encontrado");
+            }
+
+            await clicarElemento(sendBtn, 2000);
+            logs.push(log("sucesso", "Template enviado"))
+
+            await esperar(3000);
+
+            const menssagems = document.querySelectorAll('p[data-id="message-text"]');
+            const menssagemElemento = menssagems[menssagems.length -1];
+            const mensagem = menssagemElemento.textContent.trim();
+            logs.push(log("sucesso", "Mensagem capturada"));
+
+            return mensagem;
+        } catch (error) {
+            logs.push(log('erro', `Erro ao enviar tamplate: ${error.message} `));
+            throw error;
+        }
+    }
+
+    async function registrarTarefa(menssagem, logs){
+        logs.push(log("info", "Criando Tarefa..."));
+
+        try{
+            const botaoNovaTarefa = await esperarElemento('button[aria-label="Nova tarefa"]', 5000);
+            await clicarElemento(botaoNovaTarefa, 1500);
+            logs.push(log("sucesso", "Modal de tarefa aberto"));
+
+            await esperar(1000);
+
+            // Campo tipo
+            await selecionarOpcaoCombobox(
+                'a[role="combobox"][aria-labelledby*="label"]',
+                ".uiMenuItem a",
+                "Contato",
+                logs,
+                "Tipo"
+            );
+            await esperar(500);
+
+            // Campo assunto
+            await selecionarOpcaoCombobox(
+                'lightning-grouped-combobox [role="combobox"]',
+                "lightning-base-combobox-item",
+                "Primeiro Contato",
+                logs,
+                "Assunto"
+            );
+            await esperar(500);
+
+            // Campo assunto
+            await selecionarOpcaoCombobox(
+                'lightning-grouped-combobox [role="combobox"]',
+                "lightning-base-combobox-item",
+                "Primeiro Contato",
+                logs,
+                "Assunto"
+            );
+            await esperar(500);
+
+            // Campo Data de Vencimento
+            const InputData = esperarElemento( 'lightning-datepicker input[type="text"]');
+
+            if(!InputData){
+                throw new Error(`Campo de data não encontrado`)
+            }
+
+            const hoje = new Date();
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            const mes = String(hoje.getMoth() + 1).padStart(2, "0");
+            const ano = hoje.getFullYear();
+            const dataFormatada = `${dia}/${mes}/${ano}`;
+
+            InputData.value = dataFormatada;
+            ativarEventosInputs(InputData);
+
+            await esperar(500);
+            logs.push(log("sucesso", "Data de vencimento: " + dateStr));
+
+            // Campo Comentario da tarefa
+            const textareaComentario = document.querySelector('textarea[role="textbox"]');
+
+            if(!textareaComentario){
+                throw new Error(`Campo de comentarios não encontrado`)
+            }
+
+            textareaComentario.value = menssagem
+            ativarEventosInputs(textareaComentario);
+
+            await esperar(300);
+            
+            logs.push(log("sucesso", "Comentarios preenchidos"));
+
+            // Check de conjunto de lembretes
+
+            const secaoTarefa = esperarElemento('fieldset[data-aura-class="forcePageBlockSection forcePageBlockSectionEdit"]');
+            const checkboxLembrete = secaoTarefa.querySelectorAll('lightning-input input[type="checkbox"]');
+
+            if(!checkboxLembrete){
+                if(checkboxLembrete.checked){
+                    await clicarElemento(checkboxLembrete)
+                    logs.push(log('sucesso', "Lembrete desmarcado"));
+                }else{
+                    logs.push(log("info", "Lembrete ja estava desmarcado"));
+                }
+            }else{
+                 logs.push(log("warning", "Checkbox de lembrete nao encontrado (nao critico)"));
+            }
+
+            await esperar(800);
+
+            // Salvar Tarefa
+            const botaoSalvarTarefa = document.querySelector("button.cuf-publisherShareButton");
+
+            if(!botaoSalvarTarefa){
+                throw new Error("Botao Salvar nao encontrado");
+            }
+
+            await clicarElemento(botaoSalvarTarefa, 2000);
+            logs.push(log('susesso', "tarefa Salva"));
+
+            return true;
+        }catch(erro){
+            logs.push(log("erro", `Erro ao criar tarefa: ${erro.message}`));
+            throw erro;
+        }
+    }
+
+
+    const primeiroContatoGWM = {
+        nome: 'Primeiro Contato GWM',
+        descrição: "Formata lead, envia templatede menssagem pelo beetalk e cria tarefa",
+
+        executar: async (contexto) => {
+            const logs = [];
+
+            logs.push(log("info", "Iniciando automacao: Primeiro Contato GWM"));
+
+
+            try {
+                const dadosOperador = await new Promise((resolver) => {
+                    chrome.storage.local.get("opeador", resolver)
+                })
+
+                const operador = (dadosOperador.operador || "Eduardo").split(" ")[0];
+                logs.push(log('info', `Operador: ${operador}`));
+
+                await ativarModoEdicao(logs);
+
+                const nomeFormatado = await formatarNome(logs);
+
+                const primeiroNome = nomeFormatado.primeiroNome ? nomeFormatado.primeiroNome : nomeFormatado.sobrenome;
+
+                await formatarNumeroTelefone(logs);
+                await preencherInputsInteresses(logs);
+
+                const modelo = await formatarModeloInteresse(logs);
+
+                await savlarDesativarModoEdicao(logs);
+
+                const menssagem = await enviarTamplateWhatsapp(primeiroNome, modelo, operador, logs);
+
+                await registrarTarefa(menssagem, logs);
+
+                return{
+                    sucesso: true,
+                    logs: logs,
+                }
+            } catch (erro) {
+                logs.push(log('erro', `Falha na automacao ${erro.message}`));
+                return {
+                    sucesso: false,
+                    erro: erro.message,
+                    logs: logs,
+                }
+            }
+        }
+    }
+
+    // Registrar Marca GWM
+    if(window.gerenciadorMarcas){
+        window.gerenciadorMarcas.cadastrarMarca('gwm', {
+            nome: "GWM",
+            descricao: "Great Wall Motors",
+            tarefas: {
+                "primeiro-contato": primeiroContatoGWM,
+            },
         });
 
-        if (assuntoOption) {
-          await clickElement(assuntoOption, 500);
-          logs.push(log("success", "Assunto selecionado: Primeiro Contato"));
-        }
-      }
-
-      await sleep(500);
-      const dateInput = document.querySelector(
-        'lightning-datepicker input[type="text"]'
-      );
-
-      if (dateInput) {
-        const today = new Date();
-        const dd = String(today.getDate()).padStart(2, "0");
-        const mm = String(today.getMonth() + 1).padStart(2, "0");
-        const yyyy = today.getFullYear();
-        const dateStr = dd + "/" + mm + "/" + yyyy;
-
-        dateInput.value = dateStr;
-        fireInputEvents(dateInput);
-        await sleep(300);
-        logs.push(log("success", "Data de vencimento: " + dateStr));
-      }
-
-      await sleep(500);
-      const commentTextarea = document.querySelector(
-        'textarea[role="textbox"]'
-      );
-
-      if (commentTextarea) {
-        commentTextarea.value = message;
-        fireInputEvents(commentTextarea);
-        await sleep(300);
-        logs.push(log("success", "Comentarios preenchidos"));
-      }
-
-      await sleep(500);
-      const reminderLightning = Array.from(
-        document.querySelectorAll("lightning-input")
-      ).find(function (el) {
-        const label = el.querySelector(
-          'span.slds-form-element__label, span[part="label"]'
-        );
-        return label && label.textContent.includes("Conjunto de lembretes");
-      });
-
-      if (reminderLightning) {
-        const reminderCheckbox = reminderLightning.querySelector(
-          'input[type="checkbox"]'
-        );
-
-        if (reminderCheckbox && reminderCheckbox.checked) {
-          await clickElement(reminderCheckbox, 300);
-          logs.push(log("success", "Lembrete desmarcado"));
-        } else if (reminderCheckbox) {
-          logs.push(log("info", "Lembrete ja estava desmarcado"));
-        }
-      } else {
-        logs.push(
-          log("warning", "Checkbox de lembrete nao encontrado (nao critico)")
-        );
-      }
-
-      await sleep(800);
-      const saveBtn = document.querySelector("button.cuf-publisherShareButton");
-
-      if (!saveBtn) {
-        throw new Error("Botao Salvar nao encontrado");
-      }
-
-      await clickElement(saveBtn, 2000);
-      logs.push(log("success", "Tarefa salva"));
-
-      return true;
-    } catch (error) {
-      logs.push(log("error", "Erro ao criar tarefa: " + error.message));
-      throw error;
+        console.log("Marca GWM registrada com sucesso");
+    }else{
+        console.error("GerenciadorMarcas não encontrado!");
     }
-  }
 
-  // Tarefa Principal: Primeiro Contato
 
-  const primeiroContatoGWM = {
-    name: "Primeiro Contato GWM",
-    description: "Formata lead, envia template e cria tarefa",
-
-    execute: async function (context) {
-      const logs = [];
-      logs.push(log("info", "Iniciando automacao: Primeiro Contato GWM"));
-
-      try {
-        const operadorData = await new Promise(function (resolve) {
-          chrome.storage.local.get("operador", resolve);
-        });
-        const operador = (operadorData.operador || "Operador").split(" ")[0];
-        logs.push(log("info", "Operador: " + operador));
-
-        await activateEditMode(logs);
-        const nameResult = await formatLeadName(logs);
-        const firstName = nameResult.firstName
-          ? nameResult.firstName
-          : nameResult.lastName;
-        await formatPhoneNumber(logs);
-        await fillInterestFields(logs);
-        const modelo = await formatModeloInteresse(logs);
-        await saveDesactivateEditMode(logs);
-        const message = await sendWhatsAppTemplate(
-          firstName,
-          modelo,
-          operador,
-          logs
-        );
-        await createTask(message, logs);
-
-        logs.push(log("success", "Automacao concluida com sucesso!"));
-
-        return {
-          success: true,
-          logs: logs,
-        };
-      } catch (error) {
-        logs.push(log("error", "Falha na automacao: " + error.message));
-        return {
-          success: false,
-          error: error.message,
-          logs: logs,
-        };
-      }
-    },
-  };
-
-  // Registro da Marca GWM
-
-  if (window.brandManager) {
-    window.brandManager.registerBrand("gwm", {
-      name: "GWM",
-      description: "Great Wall Motors",
-      tasks: {
-        "primeiro-contato": primeiroContatoGWM,
-      },
-    });
-
-    console.log("Marca GWM registrada com sucesso");
-  } else {
-    console.error("BrandManager nao encontrado!");
-  }
-})();
+}
+)()

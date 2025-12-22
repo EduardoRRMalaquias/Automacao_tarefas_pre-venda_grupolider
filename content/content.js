@@ -1,173 +1,174 @@
-// content.js
-// ========== Content Script Principal ==========
+(function(){
+    'use sctrict';
 
-(function () {
-  "use strict";
+    console.log("🚀 automação de Leads GrupoLider - Content Script Carregado")
 
-  console.log("🚀 GWM Lead Automation - Content Script Carregado");
-
-  // Verifica se está em uma página de Lead
-  function isLeadPage() {
-    return window.location.href.includes("/lightning/r/Lead/");
-  }
-
-  // Listener para mensagens do popup
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log("📨 Mensagem recebida:", request);
-
-    if (request.action === "run-automation") {
-      handleAutomation(request)
-        .then((result) => {
-          console.log("✅ Automação finalizada:", result);
-          sendResponse(result);
-        })
-        .catch((error) => {
-          console.error("❌ Erro na automação:", error);
-          sendResponse({
-            success: false,
-            error: error.message,
-            logs: [
-              {
-                type: "error",
-                message: error.message,
-              },
-            ],
-          });
-        });
-
-      return true; // Mantém o canal aberto para resposta assíncrona
+    //Verifica se esta em uma pagina de lead
+    function isPaginaLead(){
+        return window.location.href.includes("lightning.force.com/lightning/r/Lead/");
     }
 
-    if (request.action === "check-page") {
-      sendResponse({
-        isLeadPage: isLeadPage(),
-        url: window.location.href,
-      });
-      return false;
+
+    //recebe mensagens enviadas do popup
+    chrome.runtime.onMessage.addListener(async (requisicao, data, enviarResposta) =>{
+        console.log("📨 Mensagem recebida:", requisicao);
+
+        if(requisicao.acao === "rodar-automacao"){
+            try {
+                const resposta = await rodarAutomacao(requisicao);
+
+                if(resposta.sucesso){
+                    console.log("✅ Automação finalizada:", resposta);
+                    enviarResposta(resposta);
+                }
+
+            } catch (error) {
+                console.error("❌ Erro na automação:", error);
+                enviarResposta({
+                    sucesso: false,
+                    error: error.message,
+                    logs: [
+                        {
+                            type: "erro",
+                            message: error.message,
+                        },
+                    ],
+                });
+            }
+            
+            return true; // Mantém o canal aberto
+        }
+
+
+        if(requisicao.acao === 'checar-pagina'){
+            enviarResposta({
+                isPaginaLead: isPaginaLead(),
+                url: window.location.href,
+            });
+            return false;
+        }
+
+        enviarResposta({error: "Ação desconhecida"});
+        return false;
+    });
+
+    //Processar automação
+    async function rodarAutomacao(requisicao) {
+        const {marca, tarefa} = requisicao;
+
+        //Validações
+        if(!isPaginaLead()){
+            return {
+                sucesso: false,
+                error: "Não está em uma página de Lead",
+                logs: [
+                    {
+                        type: "erro",
+                        message: "Esta página não é uma página de Lead válida",
+                    },
+                ],
+            };
+        }
+
+        if(!window.gerenciadorMarcas){
+            return {
+                sucesso: false,
+                error: "gerenciadorMarcas não inicializado",
+                logs: [
+                    {
+                        type: "erro",
+                        message: "Gerenciador de marcas não está disponível",
+                    },
+                ],
+            };
+        }
+
+        //Verifica se a marca existe
+        const configuracaoMarca = window.gerenciadorMarcas.getMarca(marca);
+        if(!configuracaoMarca){
+            return {
+                sucesso: false,
+                error: `Marca "${marca}" não encontrada`,
+                logs: [
+                    {
+                        type: "erro",
+                        message: `Marca ${marca} não está registrada no sistema`,
+                    }
+                ]
+            }
+        }
+
+         //Verifica se a marca existe
+        const configuracaoTarefa = window.gerenciadorMarcas.getTarefa(marca, tarefa);
+        if(!configuracaoTarefa){
+            return {
+                sucesso: false,
+                error: `tarefa "${tarefa}" não encontrada para a marca ${marca}`,
+                logs: [
+                    {
+                        type: "erro",
+                        message: `Tarefa ${tarefa} não disponível para ${marca}`,
+                    }
+                ]
+            }
+        }
+
+        // Executa a tarefa
+        console.log(`🎯 Executando tarefa ${tarefa} da marca ${marca}`);
+
+        try {
+            const resposta = await window.gerenciadorMarcas.executarTarefa(marca, tarefa, {
+                url: window.location.href,
+                dataHora: new Date().toLocaleDateString('pt-BR'),
+            });
+
+            return {
+                sucesso: resposta.sucesso,
+                logs: resposta.resposta?.logs || [],
+                error: resposta.error,
+            }
+        } catch (erro) {
+            console.error("❌ Erro ao executar tarefa:", erro);
+            return {
+                sucesso: false,
+                error: error.menssage,
+                logs: [
+                    {
+                        type: "erro",
+                        message: `Erro fatal: ${error.message}`,
+                    },
+                ],
+            };
+        }
     }
 
-    sendResponse({ error: "Ação desconhecida" });
-    return false;
-  });
+    // Aguarda gerenciadorMarcas estar disponível
+    let tentativas = 0;
+    const maximoTentativas = 50;
 
-  /**
-   * Processa a automação
-   */
-  async function handleAutomation(request) {
-    const { brand, task } = request;
+    const aguardarGerenciador = setInterval(() => {
+        tentativas++
 
-    // Validações
-    if (!isLeadPage()) {
-      return {
-        success: false,
-        error: "Não está em uma página de Lead",
-        logs: [
-          {
-            type: "error",
-            message: "Esta página não é uma página de Lead válida",
-          },
-        ],
-      };
-    }
+        if(window.gerenciadorMarcas){
+            clearInterval(aguardarGerenciador);
+            console.log("✅ gerenciadorMarcas detectado e pronto");
 
-    if (!window.brandManager) {
-      return {
-        success: false,
-        error: "BrandManager não inicializado",
-        logs: [
-          {
-            type: "error",
-            message: "Sistema de marcas não está disponível",
-          },
-        ],
-      };
-    }
+            // Sinalizar que o content script está pronto
+            try {
+                const reposta = chrome.runtime.sendMessage({
+                    acao: "content-script-pronto",
+                    url: window.location.href,
+                })
+            } catch (error) {
+                
+            }
+        };
 
-    // Verifica se a marca existe
-    const brandConfig = window.brandManager.getBrand(brand);
-    if (!brandConfig) {
-      return {
-        success: false,
-        error: `Marca "${brand}" não encontrada`,
-        logs: [
-          {
-            type: "error",
-            message: `Marca ${brand} não está registrada no sistema`,
-          },
-        ],
-      };
-    }
+        if(tentativas >= maximoTentativas){
+            clearInterval(aguardarGerenciador);
+            console.error("❌ gerenciadorMarcas não foi carregado após 5 segundos");
+        }
+    }, 100)
 
-    // Verifica se a tarefa existe
-    const taskConfig = window.brandManager.getTask(brand, task);
-    if (!taskConfig) {
-      return {
-        success: false,
-        error: `Tarefa "${task}" não encontrada para marca "${brand}"`,
-        logs: [
-          {
-            type: "error",
-            message: `Tarefa ${task} não disponível para ${brand}`,
-          },
-        ],
-      };
-    }
-
-    // Executa a tarefa
-    console.log(`🎯 Executando: ${brand} > ${task}`);
-
-    try {
-      const result = await window.brandManager.executeTask(brand, task, {
-        url: window.location.href,
-        timestamp: new Date().toISOString(),
-      });
-
-      return {
-        success: result.success,
-        logs: result.result?.logs || [],
-        error: result.error,
-      };
-    } catch (error) {
-      console.error("❌ Erro ao executar tarefa:", error);
-      return {
-        success: false,
-        error: error.message,
-        logs: [
-          {
-            type: "error",
-            message: `Erro fatal: ${error.message}`,
-          },
-        ],
-      };
-    }
-  }
-
-  // Aguarda brandManager estar disponível
-  let attempts = 0;
-  const maxAttempts = 50;
-  const checkInterval = setInterval(() => {
-    attempts++;
-
-    if (window.brandManager) {
-      clearInterval(checkInterval);
-      console.log("✅ BrandManager detectado e pronto");
-
-      // Indica que o content script está pronto
-      chrome.runtime
-        .sendMessage({
-          action: "content-script-ready",
-          url: window.location.href,
-        })
-        .catch(() => {
-          // Ignora erro se background não estiver escutando
-        });
-    }
-
-    if (attempts >= maxAttempts) {
-      clearInterval(checkInterval);
-      console.error("❌ BrandManager não foi carregado após 5 segundos");
-    }
-  }, 100);
-
-  console.log("✅ Content Script inicializado e aguardando comandos");
-})();
+    console.log("✅ Content Script inicializado e aguardando comandos");
+})()
