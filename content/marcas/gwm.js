@@ -509,7 +509,7 @@
       }
 
       await clicarElemento(botaoSalvarTarefa, 2000);
-      logs.push(log('susesso', 'tarefa Salva'));
+      logs.push(log('sucesso', 'tarefa Salva'));
 
       return true;
     } catch (erro) {
@@ -530,7 +530,7 @@
 
       try {
         const dadosOperador = await new Promise((resolver) => {
-          chrome.storage.local.get('opeador', resolver);
+          chrome.storage.local.get('operador', resolver);
         });
 
         const operador = (dadosOperador.operador || 'Eduardo').split(' ')[0];

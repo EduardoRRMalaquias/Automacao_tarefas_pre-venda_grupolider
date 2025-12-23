@@ -54,7 +54,7 @@ selectTarefa.addEventListener('change', function () {
 async function garantirCarregamentoScripts(tabId) {
   // Verificar se script esta carregado
   try {
-    const resposta = await chrome.tabs.sendMenssage(tabId, { acao: 'ping' });
+    const resposta = await chrome.tabs.sendMessage(tabId, { acao: 'ping' });
     if (resposta.pong) return { metodo: 'script-carregado', sucesso: true };
   } catch {}
 
@@ -68,7 +68,7 @@ async function garantirCarregamentoScripts(tabId) {
         'content/content.js',
       ],
     });
-    return { metodo: 'injetado', susesso: true };
+    return { metodo: 'injetado', sucesso: true };
   } catch {}
 
   await chrome.tabs.reload(tabId);
@@ -95,11 +95,11 @@ botaoRodarAutomacao.addEventListener('click', async function () {
 
     if (!tab.url.includes('lightning.force.com/lightning/r/Lead/')) {
       exibirStatus('erro', 'Abra uma pagina de Lead do Salesforce');
-      habilitarButões();
+      habilitarButoes();
       return;
     }
 
-    // SOLUCAO HIBRIDA: Garante que scripts estao carregados
+    // Garante que scripts estao carregados
     adicionarLog('info', 'Verificando scripts...');
     const resultadoCarregamento = await garantirCarregamentoScripts(tab.id);
 
@@ -120,12 +120,21 @@ botaoRodarAutomacao.addEventListener('click', async function () {
       tarefa: selectTarefa.value,
     });
 
-    if (resposta.successo) {
+    if (!resposta) {
+      exibirStatus('erro', 'Nenhuma resposta recebida do content script');
+      adicionarLog(
+        'erro',
+        'Content script não respondeu. Tente recarregar a página.',
+      );
+      habilitarButoes();
+    }
+
+    if (resposta.sucesso) {
       exibirStatus('sucesso', 'Automacao concluida com sucesso!');
       exibirLogs(resposta.logs);
       chrome.storage.local.set({ ultimosLogs: resposta.logs });
 
-      setTimeout(async function () {
+      setTimeout(async () => {
         try {
           await chrome.tabs.remove(tab.id);
         } catch (e) {
@@ -140,7 +149,7 @@ botaoRodarAutomacao.addEventListener('click', async function () {
     exibirStatus('erro', 'Super mega Erro: ' + erro.message);
     adicionarLog('erro', erro.message);
   } finally {
-    desabilitarButoes();
+    habilitarButoes();
   }
 });
 
@@ -167,7 +176,7 @@ function desabilitarButoes() {
   botoaoRodarTodasAbas.disabled = true;
 }
 
-function habilitarButões() {
+function habilitarButoes() {
   botaoRodarAutomacao.disabled = false;
   botoaoRodarTodasAbas.disabled = false;
 }

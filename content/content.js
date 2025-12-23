@@ -1,6 +1,5 @@
 (function () {
-  'use sctrict';
-
+  'use strict';
   console.log('🚀 automação de Leads GrupoLider - Content Script Carregado');
 
   //Verifica se esta em uma pagina de lead
@@ -12,32 +11,34 @@
 
   //recebe mensagens enviadas do popup
   chrome.runtime.onMessage.addListener(
-    async (requisicao, data, enviarResposta) => {
+    (requisicao, remetente, enviarResposta) => {
       console.log('📨 Mensagem recebida:', requisicao);
 
-      if (requisicao.acao === 'rodar-automacao') {
-        try {
-          const resposta = await rodarAutomacao(requisicao);
+      if (requisicao.acao === 'ping') {
+        enviarResposta({ pong: true });
+        return false;
+      }
 
-          if (resposta.sucesso) {
+      if (requisicao.acao === 'rodar-automacao') {
+        rodarAutomacao(requisicao)
+          .then((resposta) => {
             console.log('✅ Automação finalizada:', resposta);
             enviarResposta(resposta);
-          }
-        } catch (erro) {
-          console.error('❌ Erro na automação:', erro);
-          enviarResposta({
-            sucesso: false,
-            erro: erro.message,
-            logs: [
-              {
-                tipo: 'erro',
-                menssagem: erro.message,
-              },
-            ],
+          })
+          .catch((erro) => {
+            enviarResposta({
+              sucesso: false,
+              erro: erro.message,
+              logs: [
+                {
+                  tipo: 'erro',
+                  menssagem: erro.message,
+                },
+              ],
+            });
           });
-        }
 
-        return true; // Mantém o canal aberto
+        return true;
       }
 
       if (requisicao.acao === 'checar-pagina') {

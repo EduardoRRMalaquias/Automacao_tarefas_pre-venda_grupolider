@@ -29,12 +29,9 @@ chrome.runtime.onMessage.addListener((requisicao, data, enviarResposta) => {
     console.log(
       `✅ Content script pronto na aba ${data.tab?.id}: ${requisicao.url}`,
     );
-    enviarResposta({ recebido: true });
-    return false;
+    return { recebido: true };
   }
 
-  // Passa mensagens adiante (se necessário)
-  enviarResposta({ recebido: true });
   return false;
 });
 
