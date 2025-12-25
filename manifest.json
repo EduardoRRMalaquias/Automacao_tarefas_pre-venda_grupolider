@@ -13,6 +13,7 @@
       "matches": ["https://grupolider.lightning.force.com/lightning/r/Lead/*"],
       "js": [
         "content/marcas/gerenciadorMarcas.js",
+        "content/marcas/utilitarios.js",
         "content/marcas/gwm.js",
         "content/content.js"
       ],

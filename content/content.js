@@ -87,6 +87,7 @@
 
     //Verifica se a marca existe
     const configuracaoMarca = window.gerenciadorMarcas.getMarca(marca);
+    console.log(configuracaoMarca);
     if (!configuracaoMarca) {
       return {
         sucesso: false,
