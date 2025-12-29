@@ -56,21 +56,27 @@ async function garantirCarregamentoScripts(tabId) {
   try {
     const resposta = await chrome.tabs.sendMessage(tabId, { acao: 'ping' });
     if (resposta.pong) return { metodo: 'script-carregado', sucesso: true };
-  } catch {}
+  } catch {
+    console.log(`⚠️ Aba ${tabId}: Scripts não responderam ao ping`);
+  }
 
   // Injetar script se não estiver carregado
   try {
     await chrome.scripting.executeScript({
       target: { tabId, allFrames: true },
       files: [
+        'content/marcas/utilitarios.js',
         'content/marcas/gerenciadorMarcas.js',
         'content/marcas/gwm.js',
         'content/content.js',
       ],
     });
     return { metodo: 'injetado', sucesso: true };
-  } catch {}
+  } catch (erro) {
+    console.log(`⚠️ Aba ${tabId}: Injeção falhou - ${erro.message}`);
+  }
 
+  console.log(`→ Aba ${tabId}: Recarregando página...`);
   await chrome.tabs.reload(tabId);
   await sleep(3000);
   return { metodo: 'recarregado', sucesso: true };

@@ -50,7 +50,8 @@
       });
     },
 
-    ativarEventosInputs: (elemento) => {
+    ativarEventosElementos: (elemento) => {
+      elemento.dispatchEvent(new Event('click', { bubbles: true }));
       elemento.dispatchEvent(new Event('input', { bubbles: true }));
       elemento.dispatchEvent(new Event('change', { bubbles: true }));
       elemento.dispatchEvent(new Event('blur', { bubbles: true }));
@@ -165,11 +166,11 @@
         sobrenome = sobrenome.toUpperCase();
 
         inputPrimeiroNome.value = primeiroNome;
-        window.utilitarios.ativarEventosInputs(inputPrimeiroNome);
+        window.utilitarios.ativarEventosElementos(inputPrimeiroNome);
         await window.utilitarios.esperar(100);
 
         inputSobrenome.value = sobrenome;
-        window.utilitarios.ativarEventosInputs(inputSobrenome);
+        window.utilitarios.ativarEventosElementos(inputSobrenome);
         await window.utilitarios.esperar(100);
 
         logs.push(
@@ -220,12 +221,12 @@
           .trim();
 
         inputCelular.value = numeroTelefone;
-        window.utilitarios.ativarEventosInputs(inputCelular);
+        window.utilitarios.ativarEventosElementos(inputCelular);
         await window.utilitarios.esperar(100);
 
         if (inputTelefone.value) {
           inputTelefone.value = 0;
-          window.utilitarios.ativarEventosInputs(inputTelefone);
+          window.utilitarios.ativarEventosElementos(inputTelefone);
         }
 
         logs.push(
@@ -378,7 +379,7 @@
         modelo = modelo.replace(/_/g, ' ').toUpperCase();
 
         modeloTextarea.value = modelo;
-        window.utilitarios.ativarEventosInputs(modeloTextarea);
+        window.utilitarios.ativarEventosElementos(modeloTextarea);
         await window.utilitarios.esperar(100);
 
         logs.push(
@@ -396,7 +397,7 @@
       }
     },
 
-    enviarTamplateWhatsapp: async function enviarTamplateWhatsapp(
+    enviarTamplateWhatsapp: async function (
       primeiroNome,
       modelo,
       operador,
@@ -407,14 +408,20 @@
       );
 
       try {
-        const botaoEnviarTamplate = await window.utilitarios.esperarElemento(
-          'p.center-button',
-          5000,
-        );
-        await window.utilitarios.clicarElemento(botaoEnviarTamplate, 800);
-        logs.push(
-          window.utilitarios.log('sucesso', 'Botao de template clicado'),
-        );
+        try {
+          const botaoEnviarTamplate = await esperarElemento(
+            'p.center-button',
+            5000,
+          );
+          await clicarElemento(botaoEnviarTamplate, 800);
+          logs.push(log('sucesso', 'Primeiro botão'));
+        } catch {
+          const tampleteRapido = await esperarElemento(
+            'use[data-name="quick-messages"]',
+          );
+          logs.push(log('sucesso', 'Segundo Botao '), tampleteRapido);
+          ativarEventosElementos(tampleteRapido);
+        }
 
         await window.utilitarios.esperar(500);
         const pastaTamplate = await window.utilitarios.esperarElemento(
@@ -446,7 +453,7 @@
           5000,
         );
         campo1.value = primeiroNome + ' ';
-        window.utilitarios.ativarEventosInputs(campo1);
+        window.utilitarios.ativarEventosElementos(campo1);
         await window.utilitarios.esperar(200);
         logs.push(
           window.utilitarios.log(
@@ -460,7 +467,7 @@
           5000,
         );
         campo2.value = operador;
-        window.utilitarios.ativarEventosInputs(campo2);
+        window.utilitarios.ativarEventosElementos(campo2);
         await window.utilitarios.esperar(200);
         logs.push(
           window.utilitarios.log('sucesso', 'Campo 2 preenchido: ' + operador),
@@ -471,7 +478,7 @@
           5000,
         );
         campo3.value = modelo || 'HAVAL H6';
-        window.utilitarios.ativarEventosInputs(campo3);
+        window.utilitarios.ativarEventosElementos(campo3);
         await window.utilitarios.esperar(200);
         logs.push(
           window.utilitarios.log('sucesso', 'Campo 4 preenchido: ' + modelo),
@@ -570,7 +577,7 @@
         const dataFormatada = `${dia}/${mes}/${ano}`;
 
         InputData.value = dataFormatada;
-        window.utilitarios.ativarEventosInputs(InputData);
+        window.utilitarios.ativarEventosElementos(InputData);
 
         await window.utilitarios.esperar(500);
         logs.push(
@@ -590,7 +597,7 @@
         }
 
         textareaComentario.value = menssagem;
-        window.utilitarios.ativarEventosInputs(textareaComentario);
+        window.utilitarios.ativarEventosElementos(textareaComentario);
 
         await window.utilitarios.esperar(300);
 
