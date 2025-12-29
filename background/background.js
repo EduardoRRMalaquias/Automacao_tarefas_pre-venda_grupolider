@@ -2,7 +2,24 @@
 
 console.log('🔧 GWM Lead Automation - Background Service Worker Iniciado');
 
-// Listener de instalação
+// Verifica se a mensagem foi recebida e se o script esta carregado corretamente na aba atual
+chrome.runtime.onMessage.addListener((requisicao, remetente, enviarResposta) => {
+  console.log('📨 Mensagem recebida no background:', requisicao);
+
+  if (requisicao.acao === 'content-script-pronto') {
+    console.log(
+      `✅ Content script pronto na aba ${remetente.tab?.id}: ${requisicao.url}`,
+    );
+    return { recebido: true };
+  }
+
+  return false;
+});
+
+//===========================================================
+//Ciclo de vida da extenção
+
+// Monitora instalação e atualização
 chrome.runtime.onInstalled.addListener((detalhes) => {
   if (detalhes.reason === 'install') {
     console.log('✅ Extensão instalada pela primeira vez');
@@ -17,36 +34,23 @@ chrome.runtime.onInstalled.addListener((detalhes) => {
   }
 
   if (detalhes.reason === 'update') {
-    console.log('🔄 Extensão atualizada');
+    const novaVersao = chrome.runtime.getManifest().version;
+    console.log(`🔄 Extensão atualizada para versão ${novaVersao}`);
   }
-});
-
-// Verifica se a mensagem foi recebida e se o script esta carregado corretamente na aba atual
-chrome.runtime.onMessage.addListener((requisicao, data, enviarResposta) => {
-  console.log('📨 Mensagem recebida no background:', requisicao);
-
-  if (requisicao.acao === 'content-script-pronto') {
-    console.log(
-      `✅ Content script pronto na aba ${data.tab?.id}: ${requisicao.url}`,
-    );
-    return { recebido: true };
-  }
-
-  return false;
 });
 
 // Monitora quando abas são fechadas
-chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
-  console.log(`🗑️ Aba ${tabId} fechada`);
+chrome.tabs.onRemoved.addListener((idAba, removeInfo) => {
+  console.log(`🗑️ Aba ${idAba} fechada`);
 });
 
 //Monitora quando abas são atualizadas
-chrome.tabs.onUpdated.addListener((tabId, infoMudanca, tab) => {
+chrome.tabs.onUpdated.addListener((idAba, infoMudanca, aba) => {
   if (
     infoMudanca.status === 'complete' &&
-    tab.url.includes('lightning.force.com/lightning/r/Lead/')
+    aba.url.includes('lightning.force.com/lightning/r/Lead/')
   ) {
-    console.log(`✅ Página de Lead carregada na aba ${tabId}`);
+    console.log(`✅ Página de Lead carregada na aba ${idAba}`);
   }
 });
 

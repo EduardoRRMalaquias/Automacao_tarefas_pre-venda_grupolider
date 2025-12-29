@@ -13,8 +13,8 @@ const logsDiv = document.getElementById('logs');
 
 // Carrega Configuracoes
 chrome.storage.local.get(
-  ['operador', 'selectedBrand', 'selectedTask', 'lastLogs'],
-  function (configuracoes) {
+  ['operador', 'marcaSelecionada', 'tarefaSelecionada', 'marcaSelecionada'],
+  (configuracoes) => {
     operadorInput.value = configuracoes.operador || '';
     selectMarca.value = configuracoes.selecionarMarca || 'gwm';
     selectTarefa.value = configuracoes.selecionarTarefa || 'primeiro-contato';
@@ -26,7 +26,7 @@ chrome.storage.local.get(
 );
 
 // Salvar Nome do Operador
-botaoSalvarOperador.addEventListener('click', function () {
+botaoSalvarOperador.addEventListener('click', () => {
   const nome = operadorInput.value.trim();
 
   if (!nome) {
@@ -34,130 +34,121 @@ botaoSalvarOperador.addEventListener('click', function () {
     return;
   }
 
-  chrome.storage.local.set({ operador: nome }, function () {
+  chrome.storage.local.set({ operador: nome }, () => {
     exibirStatus('sucesso', 'Nome salvo com sucesso!');
-    setTimeout(function () {
+    setTimeout(() => {
       ocultarStatus();
     }, 2000);
   });
 });
 
 // Salvar Marca e Tarefa
-selectMarca.addEventListener('change', function () {
+selectMarca.addEventListener('change', () => {
   chrome.storage.local.set({ SelecionarMarca: selectMarca.value });
 });
 
-selectTarefa.addEventListener('change', function () {
+selectTarefa.addEventListener('change', () => {
   chrome.storage.local.set({ SelecionarTarefa: selectTarefa.value });
 });
 
-async function garantirCarregamentoScripts(tabId) {
-  // Verificar se script esta carregado
-  try {
-    const resposta = await chrome.tabs.sendMessage(tabId, { acao: 'ping' });
-    if (resposta.pong) return { metodo: 'script-carregado', sucesso: true };
-  } catch {
-    console.log(`⚠️ Aba ${tabId}: Scripts não responderam ao ping`);
-  }
-
-  // Injetar script se não estiver carregado
-  try {
-    await chrome.scripting.executeScript({
-      target: { tabId, allFrames: true },
-      files: [
-        'content/marcas/utilitarios.js',
-        'content/marcas/gerenciadorMarcas.js',
-        'content/marcas/gwm.js',
-        'content/content.js',
-      ],
-    });
-    return { metodo: 'injetado', sucesso: true };
-  } catch (erro) {
-    console.log(`⚠️ Aba ${tabId}: Injeção falhou - ${erro.message}`);
-  }
-
-  console.log(`→ Aba ${tabId}: Recarregando página...`);
-  await chrome.tabs.reload(tabId);
-  await sleep(3000);
-  return { metodo: 'recarregado', sucesso: true };
-}
-
-// Executar Automacao na Aba Atual
-botaoRodarAutomacao.addEventListener('click', async function () {
+botaoRodarAutomacao.addEventListener('click', async () => {
   const operador = operadorInput.value.trim();
 
   if (!operador) {
-    exibirStatus('erro', 'Configure o nome do operador primeiro');
+    exibirStatus('error', 'Primeiro configure o operador ');
     return;
   }
 
   try {
-    exibirStatus('carregando', 'Executando automacao...');
+    exibirStatus('loading', 'Executando automação...');
     desabilitarButoes();
     limparLogs();
 
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const tab = tabs[0];
+    const [aba] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
 
-    if (!tab.url.includes('lightning.force.com/lightning/r/Lead/')) {
-      exibirStatus('erro', 'Abra uma pagina de Lead do Salesforce');
+    if (!aba.url.includes('lightning.force.com/lightning/r/Lead/')) {
+      exibirStatus('error', 'Abra uma página de Lead');
       habilitarButoes();
       return;
     }
 
-    // Garante que scripts estao carregados
-    adicionarLog('info', 'Verificando scripts...');
-    const resultadoCarregamento = await garantirCarregamentoScripts(tab.id);
+    adicionarLog('info', 'Enviando comando da automação para o background...');
 
-    if (resultadoCarregamento.metodo === 'injetado') {
-      adicionarLog('info', 'Scripts injetados dinamicamente');
-    } else if (resultadoCarregamento.metodo === 'recarregado') {
-      adicionarLog('info', 'Pagina foi recarregada');
-    } else {
-      adicionarLog('info', 'Scripts ja estavam carregados');
-    }
-
-    // Executa automacao
-    adicionarLog('info', 'Iniciando automacao...');
-
-    const resposta = await chrome.tabs.sendMessage(tab.id, {
-      acao: 'rodar-automacao',
-      marca: selectMarca.value,
-      tarefa: selectTarefa.value,
+    // Envia para background E AGUARDA resposta
+    const resposta = await chrome.runtime.sendMessage({
+      acao: 'rodar-unica-aba',
+      idAba: aba.id,
+      marca: selectMarca,
+      tarefa: selectTarefa,
     });
 
-    if (!resposta) {
-      exibirStatus('erro', 'Nenhuma resposta recebida do content script');
-      adicionarLog(
-        'erro',
-        'Content script não respondeu. Tente recarregar a página.',
-      );
-      habilitarButoes();
-    }
-
     if (resposta.sucesso) {
-      exibirStatus('sucesso', 'Automacao concluida com sucesso!');
-      exibirLogs(resposta.logs);
-      chrome.storage.local.set({ ultimosLogs: resposta.logs });
+      exibirStatus('sucesso', 'Automação concluída!');
 
-      setTimeout(async () => {
-        try {
-          await chrome.tabs.remove(tab.id);
-        } catch (e) {
-          console.log('Aba ja foi fechada');
-        }
-      }, 2000);
+      if (resposta.logs) {
+        exibirLogs(resposta.logs);
+      }
     } else {
-      exibirStatus('erro', 'Erro: ' + resposta.erro);
-      exibirLogs(resposta.logs || []);
+      exibirStatus('error', `Erro: ${resposta.erro}`);
     }
   } catch (erro) {
-    exibirStatus('erro', 'Super mega Erro: ' + erro.message);
+    exibirStatus('erro', `Erro: ${erro.message}`);
     adicionarLog('erro', erro.message);
   } finally {
     habilitarButoes();
   }
 });
+
+// executar automação para todas as abas
+botoaoRodarTodasAbas.addEventListener('click', async () => {
+  const operador = operadorInput.value.trim();
+
+  if (!operador) {
+    exibirStatus('error', 'Primeiro configure o operador ');
+    return;
+  }
+
+  try {
+    exibirStatus('loading', 'Executando automação em todas as abas...');
+    desabilitarButoes();
+    limparLogs();
+
+    // Envia para background (NÃO aguarda processamento completo!)
+    chrome.runtime.sendMessage({
+      acao: 'rodar-todas-abas',
+      marca: selectMarca.value,
+      tarefa: selectTarefa.value,
+    });
+
+    exibirStatus('successo', 'Processamento iniciado!');
+  } catch (erro) {
+    exibirStatus('erro', `Erro: ${erro.message}`);
+    adicionarLog('erro', erro.message);
+  } finally {
+    setTimeout(() => habilitarButoes(), 1000);
+  }
+});
+
+//Receber Logs
+chrome.runtime.onMessage.addListener(
+  (requisicao, remetente, enviarResposta) => {
+    console.log('📨 Popup recebeu mensagem de logs:', requisicao);
+
+    // Log da automação
+    if (requisicao.acao === 'logs-automacao') {
+      adicionarLog(requisicao.tipo, requisicao.menssagem);
+      exibirStatus(requisicao.tipo, requisicao.menssagem);
+      enviarResposta({ recebido: true });
+      return false;
+    }
+
+    enviarResposta({ recebido: false });
+    return false;
+  },
+);
 
 // Funcoes de UI
 function exibirStatus(tipo, menssagem) {
