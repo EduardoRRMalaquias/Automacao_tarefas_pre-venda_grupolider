@@ -6,8 +6,8 @@
 
   // funçoes de Manipulação da pagina
   const ativarModoEdicao = window.utilitarios.ativarModoEdicao;
-  const savlarDesativarModoEdicao =
-    window.utilitarios.savlarDesativarModoEdicao;
+  const salvarDesativarModoEdicao =
+    window.utilitarios.salvarDesativarModoEdicao;
   const formatarNome = window.utilitarios.formatarNome;
   const formatarNumeroTelefone = window.utilitarios.formatarNumeroTelefone;
   const preencherInputsInteresses =
@@ -47,7 +47,7 @@
 
         const modelo = await formatarModeloInteresse(logs);
 
-        await savlarDesativarModoEdicao(logs);
+        await salvarDesativarModoEdicao(logs);
 
         const menssagem = await enviarTamplateWhatsapp(
           primeiroNome,

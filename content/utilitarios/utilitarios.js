@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const seletores = window.seletores;
 
   // Exporta funções para window.utils
   window.utilitarios = {
@@ -27,10 +28,15 @@
 
         if (elemento) return resolver(elemento);
 
+        let observadorAtivo = true;
+
         const observador = new MutationObserver(() => {
+          if (!observadorAtivo) return;
+
           const elementoObservado = document.querySelector(seletor);
 
           if (elementoObservado) {
+            observadorAtivo = false;
             observador.disconnect();
             resolver(elementoObservado);
           }
@@ -42,6 +48,9 @@
         });
 
         setTimeout(() => {
+          if (!observadorAtivo) return;
+
+          observadorAtivo = false;
           observador.disconnect();
           rejeitar(
             new Error(`Demorou demais ao esperar o elemento ${elemento}`),
@@ -51,6 +60,7 @@
     },
 
     ativarEventosElementos: (elemento) => {
+      console.log('ativando eventos elementos');
       elemento.dispatchEvent(new Event('click', { bubbles: true }));
       elemento.dispatchEvent(new Event('input', { bubbles: true }));
       elemento.dispatchEvent(new Event('change', { bubbles: true }));
@@ -71,7 +81,7 @@
 
       try {
         const botaoEdicao = await window.utilitarios.esperarElemento(
-          'button.inline-edit-trigger[title*="Editar"]',
+          seletores.salesforce.botoes.editar,
           5000,
         );
         await window.utilitarios.clicarElemento(botaoEdicao);
@@ -89,7 +99,7 @@
       }
     },
 
-    savlarDesativarModoEdicao: async function (logs) {
+    salvarDesativarModoEdicao: async function (logs) {
       logs.push(
         window.utilitarios.log(
           'info',
@@ -99,7 +109,7 @@
 
       try {
         const botaoSalvarEdicao = await window.utilitarios.esperarElemento(
-          'lightning-button button[name="SaveEdit"]',
+          seletores.salesforce.botoes.salvarEdicao,
           5000,
         );
 
@@ -133,10 +143,10 @@
 
       try {
         const inputPrimeiroNome = await window.utilitarios.esperarElemento(
-          'input[name="firstName"]',
+          seletores.salesforce.inputs.primeiroNome,
         );
         const inputSobrenome = await window.utilitarios.esperarElemento(
-          'input[name="lastName"]',
+          seletores.salesforce.inputs.sobrenome,
         );
 
         if (!inputPrimeiroNome || !inputSobrenome) {
@@ -196,9 +206,11 @@
 
       try {
         const inputCelular = document.querySelector(
-          'input[name="MobilePhone"]',
+          seletores.salesforce.inputs.celular,
         );
-        const inputTelefone = document.querySelector('input[name="Phone"]');
+        const inputTelefone = document.querySelector(
+          seletores.salesforce.inputs.telefone,
+        );
 
         if (!inputCelular || !inputTelefone) {
           throw new Error('Campos de telefone não encontrados');
@@ -304,8 +316,8 @@
       try {
         //Selecionar Marca: GWM
         await window.utilitarios.selecionarOpcaoCombobox(
-          'button[role="combobox"][aria-label="Marca"]',
-          'lightning-base-combobox-item, [role="option"]',
+          seletores.salesforce.comboboxes.marca,
+          seletores.salesforce.opcoes.padrao,
           'GWM',
           logs,
           'Marca',
@@ -314,8 +326,8 @@
 
         // Categoria: Novos
         await window.utilitarios.selecionarOpcaoCombobox(
-          'button[role="combobox"][aria-label="Categoria"]',
-          'lightning-base-combobox-item, [role="option"]',
+          seletores.salesforce.comboboxes.categoria,
+          seletores.salesforce.opcoes.padrao,
           'Novos',
           logs,
           'Categoria',
@@ -324,8 +336,8 @@
 
         // Interesse em: Carros
         await window.utilitarios.selecionarOpcaoCombobox(
-          'button[role="combobox"][aria-label="Interesse em"]',
-          'lightning-base-combobox-item, [role="option"]',
+          seletores.salesforce.comboboxes.interesse,
+          seletores.salesforce.opcoes.padrao,
           'Carros',
           logs,
           'Interesse em',
@@ -356,7 +368,7 @@
 
       try {
         const modeloTextarea = document.querySelector(
-          'textarea[id*="input-"][maxlength="255"]',
+          seletores.salesforce.inputs.modelo,
         );
 
         if (!modeloTextarea) {
@@ -408,24 +420,53 @@
       );
 
       try {
+        let tamplatesAberto = false;
+
+        //Botão "Enviar Tamplate"
         try {
-          const botaoEnviarTamplate = await esperarElemento(
-            'p.center-button',
-            5000,
+          logs.push(
+            window.utilitarios.log('info', 'Tentando botão central...'),
           );
-          await clicarElemento(botaoEnviarTamplate, 800);
-          logs.push(log('sucesso', 'Primeiro botão'));
-        } catch {
-          const tampleteRapido = await esperarElemento(
-            'use[data-name="quick-messages"]',
+          const botaoEnviarTamplate = await window.utilitarios.esperarElemento(
+            seletores.beetalk.botoes.enviarTamplate,
+            3000,
           );
-          logs.push(log('sucesso', 'Segundo Botao '), tampleteRapido);
-          ativarEventosElementos(tampleteRapido);
+          await window.utilitarios.clicarElemento(botaoEnviarTamplate, 800);
+          logs.push(window.utilitarios.log('sucesso', 'Botão central clicado'));
+          tamplatesAberto = true;
+        } catch (erroTentativa1) {
+          logs.push(
+            window.utilitarios.log(
+              'info',
+              'Botão central não encontrado, tentando alternativa...',
+            ),
+          );
         }
 
+        //botao tamplate rapido
+        if (!tamplatesAberto) {
+          try {
+            logs.push(
+              window.utilitarios.log('info', 'Tentando quick-messages...'),
+            );
+            const tampleteRapido = await window.utilitarios.esperarElemento(
+              seletores.beetalk.botoes.tamplateRapido,
+              3000,
+            );
+            console.log(tampleteRapido);
+            window.utilitarios.ativarEventosElementos(tampleteRapido);
+            tamplatesAberto = true;
+          } catch (erroTentativa2) {
+            throw new Error(
+              'Nenhum botão de template encontrado (center-button ou quick-messages)',
+            );
+          }
+        }
+
+        //pasta de tamplates
         await window.utilitarios.esperar(500);
         const pastaTamplate = await window.utilitarios.esperarElemento(
-          'p[data-folder-name="GW LIDER TEMPLATE"]',
+          seletores.beetalk.pastaTamplate('GW LIDER TEMPLATE'),
           5000,
         );
         await window.utilitarios.clicarElemento(pastaTamplate, 800);
@@ -435,7 +476,7 @@
 
         await window.utilitarios.esperar(500);
         const botaoTamplate = await window.utilitarios.esperarElemento(
-          'p[data-message-id="a0EU6000003BVunMAG"]',
+          seletores.beetalk.pastaTamplate('a0EU6000003BVunMAG'),
           5000,
         );
         await window.utilitarios.clicarElemento(botaoTamplate, 1000);
@@ -449,7 +490,7 @@
         await window.utilitarios.esperar(800);
 
         const campo1 = await window.utilitarios.esperarElemento(
-          'input[data-id="1"]',
+          seletores.beetalk.campo(1),
           5000,
         );
         campo1.value = primeiroNome + ' ';
@@ -463,7 +504,7 @@
         );
 
         const campo2 = await window.utilitarios.esperarElemento(
-          'input[data-id="2"]',
+          seletores.beetalk.campo(2),
           5000,
         );
         campo2.value = operador;
@@ -474,14 +515,14 @@
         );
 
         const campo3 = await window.utilitarios.esperarElemento(
-          'input[data-id="3"]',
+          seletores.beetalk.campo(3),
           5000,
         );
         campo3.value = modelo || 'HAVAL H6';
         window.utilitarios.ativarEventosElementos(campo3);
         await window.utilitarios.esperar(200);
         logs.push(
-          window.utilitarios.log('sucesso', 'Campo 4 preenchido: ' + modelo),
+          window.utilitarios.log('sucesso', 'Campo 3 preenchido: ' + modelo),
         );
 
         const botaoEnviar = Array.from(
@@ -500,7 +541,7 @@
         await window.utilitarios.esperar(5000);
 
         const menssagems = document.querySelectorAll(
-          'p[data-id="message-text"]',
+          seletores.beetalk.menssagems,
         );
         const menssagemElemento = menssagems[menssagems.length - 1];
         const mensagem = menssagemElemento.textContent.trim();
@@ -523,7 +564,7 @@
 
       try {
         const botaoNovaTarefa = await window.utilitarios.esperarElemento(
-          'button[aria-label="Nova tarefa"]',
+          seletores.salesforce.botoes.novaTarefa,
           5000,
         );
         await window.utilitarios.clicarElemento(botaoNovaTarefa, 1500);
@@ -533,8 +574,8 @@
 
         // Campo tipo
         await window.utilitarios.selecionarOpcaoCombobox(
-          'a[role="combobox"][aria-labelledby*="label"]',
-          '.uiMenuItem a',
+          seletores.salesforce.comboboxes.tipoTarefa,
+          seletores.salesforce.opcoes.menu,
           'Contato',
           logs,
           'Tipo',
@@ -543,8 +584,8 @@
 
         // Campo assunto
         await window.utilitarios.selecionarOpcaoCombobox(
-          'lightning-grouped-combobox [role="combobox"]',
-          'lightning-base-combobox-item',
+          seletores.salesforce.comboboxes.categoria,
+          seletores.salesforce.opcoes.padrao,
           'Primeiro Contato',
           logs,
           'Assunto',
@@ -553,8 +594,8 @@
 
         // Campo assunto
         await window.utilitarios.selecionarOpcaoCombobox(
-          'lightning-grouped-combobox [role="combobox"]',
-          'lightning-base-combobox-item',
+          seletores.salesforce.comboboxes.categoria,
+          seletores.salesforce.opcoes.padrao,
           'Primeiro Contato',
           logs,
           'Assunto',
@@ -563,7 +604,7 @@
 
         // Campo Data de Vencimento
         const InputData = await window.utilitarios.esperarElemento(
-          'lightning-datepicker input[type="text"]',
+          seletores.salesforce.tarefa.inputData,
         );
 
         if (!InputData) {
@@ -589,7 +630,7 @@
 
         // Campo Comentario da tarefa
         const textareaComentario = document.querySelector(
-          'textarea[role="textbox"]',
+          seletores.salesforce.tarefa.textareaComentario,
         );
 
         if (!textareaComentario) {
@@ -606,7 +647,7 @@
         // Check de conjunto de lembretes
 
         const secaoTarefa = await window.utilitarios.esperarElemento(
-          'fieldset[data-aura-class="forcePageBlockSection forcePageBlockSectionEdit"]',
+          seletores.salesforce.tarefa.secaoTarefa,
         );
         const checkboxLembrete = secaoTarefa.querySelectorAll(
           'lightning-input input[type="checkbox"]',
@@ -634,7 +675,7 @@
 
         // Salvar Tarefa
         const botaoSalvarTarefa = document.querySelector(
-          'button.cuf-publisherShareButton',
+          seletores.salesforce.botoes.salvarTarefa,
         );
 
         if (!botaoSalvarTarefa) {

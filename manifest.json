@@ -6,14 +6,16 @@
   "permissions": ["storage", "tabs", "activeTab", "scripting"],
   "host_permissions": ["https://grupolider.lightning.force.com/*"],
   "background": {
-    "service_worker": "background/background.js"
+    "service_worker": "background/background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["https://grupolider.lightning.force.com/lightning/r/Lead/*"],
       "js": [
         "content/marcas/gerenciadorMarcas.js",
-        "content/marcas/utilitarios.js",
+        "content/utilitarios/seletores.js",
+        "content/utilitarios/utilitarios.js",
         "content/marcas/gwm.js",
         "content/content.js"
       ],

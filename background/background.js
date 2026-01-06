@@ -1,20 +1,72 @@
 // ========== Background Service Worker ==========
 
-console.log('🔧 GWM Lead Automation - Background Service Worker Iniciado');
+import { processarAba } from './servicos.js';
+import { processarTodasAbas } from './servicos.js';
 
-// Verifica se a mensagem foi recebida e se o script esta carregado corretamente na aba atual
-chrome.runtime.onMessage.addListener((requisicao, remetente, enviarResposta) => {
-  console.log('📨 Mensagem recebida no background:', requisicao);
+console.log(
+  '🔧 Grupolider automação de Leads - Background Service Worker Iniciado',
+);
 
-  if (requisicao.acao === 'content-script-pronto') {
-    console.log(
-      `✅ Content script pronto na aba ${remetente.tab?.id}: ${requisicao.url}`,
-    );
-    return { recebido: true };
-  }
+// Recebe a mensagem  e executa a respectiva ação
+chrome.runtime.onMessage.addListener(
+  (requisicao, remetente, enviarResposta) => {
+    console.log('📨 Mensagem recebida no background:', requisicao);
 
-  return false;
-});
+    // Executa auitomação em apenas uma aba
+    if (requisicao.acao === 'rodar-unica-aba') {
+      console.log(`Comando: Processar unica aba ${requisicao.idAba} `);
+
+      processarAba(requisicao.idAba, requisicao.marca, requisicao.tarefa)
+        .then((resposta) => {
+          console.log(`✅ Aba ${requisicao.idAba} processada:`, resposta);
+          enviarResposta(resposta);
+        })
+        .catch((erro) => {
+          console.error(`❌ Erro na aba ${requisicao.idAba}:`, erro);
+          enviarResposta({
+            successo: false,
+            erro: erro.message,
+          });
+        });
+
+      return true;
+    }
+
+    // Executa a automação em varias abas em sequencia
+    if (requisicao.acao === 'rodar-todas-abas') {
+      console.log(`Comando: Processar TODAS as abas`);
+
+      processarTodasAbas(requisicao.marca, requisicao.tarefa)
+        .then((resultado) => {
+          console.log('✅ Todas as abas processadas:', resultado);
+        })
+        .catch((erro) => {
+          console.error('❌ Erro no processamento em lote:', erro);
+        });
+
+      enviarResposta({
+        iniciado: true,
+        menssagem: 'Processamento iniciado em segundo plano',
+      });
+
+      return false;
+    }
+
+    // verificar disponibilidade do content script
+    if (requisicao.acao === 'content-script-pronto') {
+      console.log(
+        `✅ Content script pronto na aba ${remetente.tab?.id}: ${requisicao.url}`,
+      );
+      enviarResposta({ recebido: true });
+      return false;
+    }
+
+    //Comando desconhecido
+    console.warn('⚠️ Ação desconhecida:', requisicao.acao);
+    enviarResposta({ erro: 'Ação desconhecida' });
+    return false;
+  },
+);
 
 //===========================================================
 //Ciclo de vida da extenção

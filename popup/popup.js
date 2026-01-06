@@ -81,8 +81,8 @@ botaoRodarAutomacao.addEventListener('click', async () => {
     const resposta = await chrome.runtime.sendMessage({
       acao: 'rodar-unica-aba',
       idAba: aba.id,
-      marca: selectMarca,
-      tarefa: selectTarefa,
+      marca: selectMarca.value,
+      tarefa: selectTarefa.value,
     });
 
     if (resposta.sucesso) {
@@ -140,7 +140,6 @@ chrome.runtime.onMessage.addListener(
     // Log da automação
     if (requisicao.acao === 'logs-automacao') {
       adicionarLog(requisicao.tipo, requisicao.menssagem);
-      exibirStatus(requisicao.tipo, requisicao.menssagem);
       enviarResposta({ recebido: true });
       return false;
     }
