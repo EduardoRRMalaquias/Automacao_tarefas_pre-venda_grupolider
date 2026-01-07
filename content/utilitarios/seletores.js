@@ -52,8 +52,8 @@ window.seletores = {
     },
 
     //Templates
-    pastaTamplate: (folderName) => `p[data-folder-name="${folderName}"]`,
-    botaoTamplate: (templateId) => `p[data-message-id="${templateId}"]`,
+    pastaTamplate: (idPasta) => `p[data-folder-name="${idPasta}"]`,
+    botaoTamplate: (idTemplate) => `p[data-message-id="${idTemplate}"]`,
 
     // Campos do template
     campo: (fieldId) => `input[data-id="${fieldId}"]`,

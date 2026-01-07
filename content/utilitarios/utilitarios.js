@@ -53,7 +53,7 @@
           observadorAtivo = false;
           observador.disconnect();
           rejeitar(
-            new Error(`Demorou demais ao esperar o elemento ${elemento}`),
+            new Error(`Demorou demais ao esperar o elemento ${seletor}`),
           );
         }, tempo);
       });
@@ -69,7 +69,6 @@
     },
 
     clicarElemento: async (elemento, tempo = 300) => {
-      console.log(elemento);
       elemento.click();
       await window.utilitarios.esperar(300);
     },
@@ -476,7 +475,7 @@
 
         await window.utilitarios.esperar(500);
         const botaoTamplate = await window.utilitarios.esperarElemento(
-          seletores.beetalk.pastaTamplate('a0EU6000003BVunMAG'),
+          seletores.beetalk.botaoTamplate('a0EU6000003BVunMAG'),
           5000,
         );
         await window.utilitarios.clicarElemento(botaoTamplate, 1000);
@@ -584,17 +583,7 @@
 
         // Campo assunto
         await window.utilitarios.selecionarOpcaoCombobox(
-          seletores.salesforce.comboboxes.categoria,
-          seletores.salesforce.opcoes.padrao,
-          'Primeiro Contato',
-          logs,
-          'Assunto',
-        );
-        await window.utilitarios.esperar(500);
-
-        // Campo assunto
-        await window.utilitarios.selecionarOpcaoCombobox(
-          seletores.salesforce.comboboxes.categoria,
+          seletores.salesforce.comboboxes.assunto,
           seletores.salesforce.opcoes.padrao,
           'Primeiro Contato',
           logs,
