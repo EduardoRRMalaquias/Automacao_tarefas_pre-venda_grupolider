@@ -25,15 +25,22 @@
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
-      "16": "icones/logo-16.png",
-      "48": "icones/logo-48.png",
-      "128": "icones/logo-128.png"
+      "16": "icons/logo-16.png",
+      "48": "icons/logo-48.png",
+      "128": "icons/logo-128.png"
     }
   },
 
   "icons": {
-    "16": "icones/logo-16.png",
-    "48": "icones/logo-48.png",
-    "128": "icones/logo-128.png"
-  }
+    "16": "icons/logo-16.png",
+    "48": "icons/logo-48.png",
+    "128": "icons/logo-128.png"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["content.bundle.js"],
+      "matches": ["https://grupolider.lightning.force.com/*"]
+    }
+  ]
 }

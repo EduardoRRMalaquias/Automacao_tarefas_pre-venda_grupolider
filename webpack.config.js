@@ -10,7 +10,7 @@ module.exports = (env, argv) => {
     mode: isDev ? 'development' : 'production',
 
     // Source maps para debug
-    devtool: isDev ? 'inline-source-map' : false,
+    devtool: isDev ? 'source-map' : false,
 
     // Entry points: onde começam os scripts
     entry: {
@@ -35,6 +35,9 @@ module.exports = (env, argv) => {
           exclude: /node_modules/,
           use: {
             loader: 'babel-loader',
+            options: {
+              compact: false,
+            },
           },
         },
 
@@ -67,7 +70,7 @@ module.exports = (env, argv) => {
               return JSON.stringify(manifest, null, 2);
             },
           },
-          { from: 'public/icones', to: 'icons' },
+          { from: path.resolve(__dirname, 'public/icons'), to: 'icons' },
         ],
       }),
 

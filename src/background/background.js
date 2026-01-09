@@ -39,15 +39,18 @@ chrome.runtime.onMessage.addListener(
       processarTodasAbas(requisicao.marca, requisicao.tarefa)
         .then((resultado) => {
           console.log('✅ Todas as abas processadas:', resultado);
+          enviarResposta({
+            iniciado: true,
+            mensagem: 'Processamento iniciado em segundo plano',
+          });
         })
         .catch((erro) => {
           console.error('❌ Erro no processamento em lote:', erro);
+          enviarResposta({
+            iniciado: false,
+            mensagem: erro.message,
+          });
         });
-
-      enviarResposta({
-        iniciado: true,
-        menssagem: 'Processamento iniciado em segundo plano',
-      });
 
       return false;
     }

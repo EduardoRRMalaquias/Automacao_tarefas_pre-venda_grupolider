@@ -1,6 +1,13 @@
+import './marcas/gerenciadorMarcas.js';
+import './ultilitarios/seletores.js';
+import './ultilitarios/utilitarios.js';
+import './marcas/gwm.js';
+
 (function () {
   'use strict';
-  console.log('🚀 automação de Leads GrupoLider - Content Script Carregado');
+  console.log(
+    '🚀 automação de Leads GrupoLider - Content Script Carregado com Webpack!',
+  );
 
   //Verifica se esta em uma pagina de lead
   function isPaginaLead() {
@@ -12,13 +19,14 @@
   //recebe mensagens enviadas do popup
   chrome.runtime.onMessage.addListener(
     (requisicao, remetente, enviarResposta) => {
-      console.log('📨 Mensagem recebida:', requisicao);
+      console.log('📨 Mensagem recebida no content script:', requisicao);
 
       if (requisicao.acao === 'ping') {
         enviarResposta({ pong: true });
         return false;
       }
 
+      //Rodar automação
       if (requisicao.acao === 'rodar-automacao') {
         rodarAutomacao(requisicao)
           .then((resposta) => {
@@ -26,13 +34,14 @@
             enviarResposta(resposta);
           })
           .catch((erro) => {
+            console.error('❌ Erro na automação:', erro);
             enviarResposta({
               sucesso: false,
               erro: erro.message,
               logs: [
                 {
                   tipo: 'erro',
-                  menssagem: erro.message,
+                  mensagem: erro.message,
                 },
               ],
             });
@@ -49,6 +58,7 @@
         return false;
       }
 
+      //comando desconhecido
       enviarResposta({ erro: 'Ação desconhecida' });
       return false;
     },
@@ -87,7 +97,6 @@
 
     //Verifica se a marca existe
     const configuracaoMarca = window.gerenciadorMarcas.getMarca(marca);
-    console.log(configuracaoMarca);
     if (!configuracaoMarca) {
       return {
         sucesso: false,
@@ -163,13 +172,15 @@
       clearInterval(aguardarGerenciador);
       console.log('✅ gerenciadorMarcas detectado e pronto');
 
-      // Sinalizar que o content script está pronto
+      // Sinalizar que o gerenciadorMarcas e o contenScript está pronto
       try {
-        const reposta = chrome.runtime.sendMessage({
+        chrome.runtime.sendMessage({
           acao: 'content-script-pronto',
           url: window.location.href,
         });
-      } catch (erro) {}
+      } catch (erro) {
+        // Background pode não estar disponível, ignora
+      }
     }
 
     if (tentativas >= maximoTentativas) {

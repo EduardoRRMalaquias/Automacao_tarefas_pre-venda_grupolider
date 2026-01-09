@@ -19,7 +19,7 @@
   const primeiroContatoGWM = {
     nome: 'Primeiro Contato GWM',
     descrição:
-      'Formata lead, envia templatede menssagem pelo beetalk e cria tarefa',
+      'Formata lead, envia templatede mensagem pelo beetalk e cria tarefa',
 
     executar: async (contexto) => {
       const logs = [];
@@ -49,14 +49,14 @@
 
         await salvarDesativarModoEdicao(logs);
 
-        const menssagem = await enviarTamplateWhatsapp(
+        const mensagem = await enviarTamplateWhatsapp(
           primeiroNome,
           modelo,
           operador,
           logs,
         );
 
-        await registrarTarefa(menssagem, logs);
+        await registrarTarefa(mensagem, logs);
 
         return {
           sucesso: true,

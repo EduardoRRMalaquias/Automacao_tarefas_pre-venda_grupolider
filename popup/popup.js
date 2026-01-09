@@ -139,7 +139,7 @@ chrome.runtime.onMessage.addListener(
 
     // Log da automação
     if (requisicao.acao === 'logs-automacao') {
-      adicionarLog(requisicao.tipo, requisicao.menssagem);
+      adicionarLog(requisicao.tipo, requisicao.mensagem);
       enviarResposta({ recebido: true });
       return false;
     }
@@ -150,10 +150,10 @@ chrome.runtime.onMessage.addListener(
 );
 
 // // Funcoes de UI
-// function exibirStatus(tipo, menssagem) {
+// function exibirStatus(tipo, mensagem) {
 //   statusDiv.classList.remove('hidden', 'carregando', 'sucesso', 'erro');
 //   statusDiv.classList.add(tipo);
-//   textoStatus.textContent = menssagem;
+//   textoStatus.textContent = mensagem;
 
 //   const icones = {
 //     carregando: '⏳',
@@ -181,11 +181,11 @@ function habilitarButoes() {
 //   logsDiv.innerHTML = '';
 // }
 
-// function adicionarLog(tipo, menssagem) {
+// function adicionarLog(tipo, mensagem) {
 //   const entradaLog = document.createElement('div');
 //   entradaLog.className = 'entrada-log ' + tipo;
 //   entradaLog.textContent =
-//     '[' + new Date().toLocaleTimeString() + '] ' + menssagem;
+//     '[' + new Date().toLocaleTimeString() + '] ' + mensagem;
 //   logsDiv.appendChild(entradaLog);
 //   logsDiv.scrollTop = logsDiv.scrollHeight;
 // }
@@ -193,6 +193,6 @@ function habilitarButoes() {
 // function exibirLogs(logs) {
 //   limparLogs();
 //   for (let i = 0; i < logs.length; i++) {
-//     adicionarLog(logs[i].tipo, logs[i].menssagem);
+//     adicionarLog(logs[i].tipo, logs[i].mensagem);
 //   }
 // }

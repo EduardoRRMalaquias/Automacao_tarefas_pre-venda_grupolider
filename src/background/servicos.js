@@ -4,16 +4,18 @@ const esperar = (tempo) => {
   });
 };
 
-async function enviarLogPopup(tipo, menssagem) {
+async function enviarLogPopup(tipo, mensagem) {
   try {
-    const resposta = chrome.runtime.sendMessage({
+    chrome.runtime.sendMessage({
       acao: 'logs-automacao',
       tipo: tipo,
-      menssagem: menssagem,
+      mensagem: mensagem,
     });
-  } catch {}
+  } catch (erro) {
+    // Popup pode estar fechado, ignora erro
+  }
 
-  console.log(`[${tipo}] ${menssagem}`);
+  console.log(`[${tipo}] ${mensagem}`);
 }
 
 async function garantirCarregamentoScripts(idAba) {
@@ -37,12 +39,7 @@ async function garantirCarregamentoScripts(idAba) {
 
     await chrome.scripting.executeScript({
       target: { tabId: idAba, allFrames: true },
-      files: [
-        'content/utilitarios.js',
-        'content/marcas/gerenciadorMarcas.js',
-        'content/marcas/gwm.js',
-        'content/content.js',
-      ],
+      files: ['content.bundle.js'],
     });
 
     await esperar(1000);
@@ -98,11 +95,13 @@ export async function processarAba(idAba, marca, tarefa) {
 
       if (resposta.logs && resposta.logs.length > 0) {
         resposta.logs.forEach((log) => {
-          enviarLogPopup(log.tipo, log.menssagem);
+          enviarLogPopup(log.tipo, log.mensagem);
         });
       }
 
-      //tenta fechar aba
+      esperar(2000);
+
+      //fechar aba
       try {
         await chrome.tabs.remove(idAba);
         console.log(`🗑️ Aba ${idAba} fechada`);
@@ -130,7 +129,7 @@ export async function processarAba(idAba, marca, tarefa) {
       };
     }
   } catch (erro) {
-    console.error(`❌ Aba ${idAba}: Exceção - ${erro.message}`);
+    console.error(`❌ Aba ${idAba}: Erro de exceção - ${erro.message}`);
     enviarLogPopup('error', `✗ Aba ${idAba}: ${erro.message}`);
 
     return {

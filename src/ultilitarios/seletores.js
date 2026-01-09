@@ -59,6 +59,6 @@ window.seletores = {
     campo: (fieldId) => `input[data-id="${fieldId}"]`,
 
     // Mensagens enviadas
-    menssagems: 'p[data-id="message-text"]',
+    mensagems: 'p[data-id="message-text"]',
   },
 };

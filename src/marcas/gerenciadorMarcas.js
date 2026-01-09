@@ -1,6 +1,6 @@
 // Gerenciador de Marcas
 
-if (!window.GerenciadorMarcas) {
+if (!window.gerenciadorMarcas) {
   class GerenciadorMarcas {
     constructor() {
       this.marcas = new Map();

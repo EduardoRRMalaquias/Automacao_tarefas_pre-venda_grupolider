@@ -55,14 +55,14 @@ const PainelAcoes = ({
     if (!operador) {
       setStatus({
         tipo: 'error',
-        menssagem: 'Configure o nome do operador primeiro',
+        mensagem: 'Configure o nome do operador primeiro',
       });
       return;
     }
 
-    // Validação específica para tarefas que requerem arquivo
     if (
-      (tarefaSelecionada === 'encaminhar-leads' || 'cadastrar-leads') &&
+      (tarefaSelecionada === 'encaminhar-leads' ||
+        tarefaSelecionada === 'cadastrar-leads') &&
       !arquivo
     ) {
       setStatus({
@@ -73,7 +73,7 @@ const PainelAcoes = ({
     }
 
     try {
-      setStatus({ tipo: 'carregando', menssagem: 'Executando automação...' });
+      setStatus({ tipo: 'carregando', mensagem: 'Executando automação...' });
       setCarregando(true);
       limparLogs();
 
@@ -85,7 +85,7 @@ const PainelAcoes = ({
       });
 
       if (!aba.url.includes('lightning.force.com/lightning/r/Lead/')) {
-        setStatus({ tipo: 'error', menssagem: 'Abra uma página de Lead' });
+        setStatus({ tipo: 'error', mensagem: 'Abra uma página de Lead' });
         setCarregando(false);
         return;
       }
@@ -107,7 +107,7 @@ const PainelAcoes = ({
       if (resposta && resposta.sucesso) {
         setStatus({
           tipo: 'sucesso',
-          menssagem: 'Automação concluída com sucesso!',
+          mensagem: 'Automação concluída com sucesso!',
         });
 
         if (resposta.logs && resposta.logs.length > 0) {
@@ -122,7 +122,7 @@ const PainelAcoes = ({
           });
         }
       } else {
-        setStatus({ tipo: 'error', menssagem: `Erro: ${resposta?.erro}` });
+        setStatus({ tipo: 'error', mensagem: `Erro: ${resposta?.erro}` });
 
         if (resposta?.logs) {
           setConfiguracao((configuracao) => ({
@@ -132,7 +132,7 @@ const PainelAcoes = ({
         }
       }
     } catch (erro) {
-      setStatus({ tipo: 'erro', menssagem: `Erro: ${erro.message}` });
+      setStatus({ tipo: 'erro', mensagem: `Erro: ${erro.message}` });
       adicionarLog('erro', erro.message);
     } finally {
       setCarregando(false);
@@ -145,7 +145,7 @@ const PainelAcoes = ({
     if (!operador) {
       setStatus({
         tipo: 'error',
-        menssagem: 'Configure o nome do operador primeiro',
+        mensagem: 'Configure o nome do operador primeiro',
       });
       return;
     }
@@ -153,7 +153,7 @@ const PainelAcoes = ({
     try {
       setStatus({
         tipo: 'carregando',
-        menssagem: 'Processando todas as abas...',
+        mensagem: 'Processando todas as abas...',
       });
       setCarregando(true);
       limparLogs();

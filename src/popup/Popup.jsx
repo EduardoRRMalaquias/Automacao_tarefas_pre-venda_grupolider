@@ -9,7 +9,7 @@ function Popup() {
     tarefaSelecionada: 'primeiro-contato',
     ultimosLogs: [],
   });
-  const [status, setStatus] = useState({ tipo: '', menssagem: '' });
+  const [status, setStatus] = useState({ tipo: '', mensagem: '' });
   const [carregando, setCarregando] = useState(false);
 
   // Carrega configurações salvas
@@ -46,6 +46,7 @@ function Popup() {
     };
 
     chrome.runtime.onMessage.addListener(recebedorLogs);
+    console.log('Listener de logs ativo');
 
     return () => {
       chrome.runtime.onMessage.removeListener(recebedorLogs);
@@ -56,13 +57,13 @@ function Popup() {
     const { operador } = configuracao;
 
     if (!operador.trim()) {
-      setStatus({ tipo: 'erro', menssagem: 'Digite um nome válido' });
+      setStatus({ tipo: 'erro', mensagem: 'Digite um nome válido' });
       return;
     }
 
     chrome.storage.local.set({ operador: operador }, () => {
-      setStatus({ tipo: 'sucesso', menssagem: 'Nome salvo com sucesso!' });
-      setTimeout(() => setStatus({ tipo: '', menssagem: '' }), 2000);
+      setStatus({ tipo: 'sucesso', mensagem: 'Nome salvo com sucesso!' });
+      setTimeout(() => setStatus({ tipo: '', mensagem: '' }), 2000);
     });
   };
 
@@ -102,7 +103,7 @@ function Popup() {
     <>
       <div className="container">
         <header>
-          <img src="../icones/logo-48.png" alt="" />
+          <img src="../icons/logo-48.png" alt="" />
           <div>
             <h1>Automatização de tarefas grupolíder</h1>
             <p>Criado por Eduardo R. R. Malaquias</p>
@@ -161,7 +162,7 @@ function Popup() {
 
           <section>
             <article className="secao-status">
-              {status.menssagem && (
+              {status.mensagem && (
                 <div className={`status ${status.tipo}`}>
                   <span className="icone-status">
                     {status.tipo === 'sucesso'
@@ -170,7 +171,7 @@ function Popup() {
                       ? '❌'
                       : '⏳'}
                   </span>
-                  <span className="texto-status">{status.menssagem}</span>
+                  <span className="texto-status">{status.mensagem}</span>
                 </div>
               )}
             </article>

@@ -539,11 +539,11 @@
 
         await window.utilitarios.esperar(5000);
 
-        const menssagems = document.querySelectorAll(
-          seletores.beetalk.menssagems,
+        const mensagems = document.querySelectorAll(
+          seletores.beetalk.mensagems,
         );
-        const menssagemElemento = menssagems[menssagems.length - 1];
-        const mensagem = menssagemElemento.textContent.trim();
+        const mensagemElemento = mensagems[mensagems.length - 1];
+        const mensagem = mensagemElemento.textContent.trim();
         logs.push(window.utilitarios.log('sucesso', 'Mensagem capturada'));
 
         return mensagem;
@@ -558,7 +558,7 @@
       }
     },
 
-    registrarTarefa: async function (menssagem, logs) {
+    registrarTarefa: async function (mensagem, logs) {
       logs.push(window.utilitarios.log('info', 'Criando Tarefa...'));
 
       try {
@@ -626,7 +626,7 @@
           throw new Error(`Campo de comentarios não encontrado`);
         }
 
-        textareaComentario.value = menssagem;
+        textareaComentario.value = mensagem;
         window.utilitarios.ativarEventosElementos(textareaComentario);
 
         await window.utilitarios.esperar(300);
