@@ -124,7 +124,7 @@ export async function processarAba(idAba, marca, tarefa) {
       );
 
       return {
-        successo: false,
+        sucesso: false,
         idAba,
         error: resposta?.erro || 'Erro desconhecido',
       };
@@ -134,7 +134,7 @@ export async function processarAba(idAba, marca, tarefa) {
     enviarLogPopup('error', `✗ Aba ${idAba}: ${erro.message}`);
 
     return {
-      successo: false,
+      sucesso: false,
       idAba,
       erro: erro.message,
     };
@@ -156,7 +156,7 @@ export async function processarTodasAbas(marca, tarefa) {
     console.log('⚠️ Nenhuma aba de Lead encontrada');
     enviarLogPopup('error', 'Nenhuma aba de Lead aberta');
     return {
-      successo: false,
+      sucesso: false,
       erro: 'Nenuma aba encontrada',
     };
   }
@@ -182,7 +182,7 @@ export async function processarTodasAbas(marca, tarefa) {
     const resultado = await processarAba(aba.id, marca, tarefa);
     resultados.push(resultado);
 
-    if (resultado.successo) {
+    if (resultado.sucesso) {
       contagemSucessos++;
     } else {
       contagemFalhas++;
@@ -199,12 +199,12 @@ export async function processarTodasAbas(marca, tarefa) {
   console.log('========================================\n');
 
   enviarLogPopup(
-    'successo',
+    'sucesso',
     `Concluído! ${contagemSucessos} sucesso(s), ${contagemFalhas} falha(s)`,
   );
 
   return {
-    successo: true,
+    sucesso: true,
     totalAbas: abas.length,
     contagemSucessos,
     contagemFalhas,

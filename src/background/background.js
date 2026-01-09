@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener(
         .catch((erro) => {
           console.error(`❌ Erro na aba ${requisicao.idAba}:`, erro);
           enviarResposta({
-            successo: false,
+            sucesso: false,
             erro: erro.message,
           });
         });

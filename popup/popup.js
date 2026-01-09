@@ -11,36 +11,36 @@ const textoStatus = statusDiv.querySelector('.texto-status');
 const Iconestatus = statusDiv.querySelector('.icone-status');
 const logsDiv = document.getElementById('logs');
 
-// Carrega Configuracoes
-chrome.storage.local.get(
-  ['operador', 'marcaSelecionada', 'tarefaSelecionada', 'marcaSelecionada'],
-  (configuracoes) => {
-    operadorInput.value = configuracoes.operador || '';
-    selectMarca.value = configuracoes.selecionarMarca || 'gwm';
-    selectTarefa.value = configuracoes.selecionarTarefa || 'primeiro-contato';
+// // Carrega Configuracoes
+// chrome.storage.local.get(
+//   ['operador', 'marcaSelecionada', 'tarefaSelecionada', 'marcaSelecionada'],
+//   (configuracoes) => {
+//     operadorInput.value = configuracoes.operador || '';
+//     selectMarca.value = configuracoes.selecionarMarca || 'gwm';
+//     selectTarefa.value = configuracoes.selecionarTarefa || 'primeiro-contato';
 
-    if (configuracoes.ultimosLogs) {
-      exibirLogs(configuracoes.ultimosLogs);
-    }
-  },
-);
+//     if (configuracoes.ultimosLogs) {
+//       exibirLogs(configuracoes.ultimosLogs);
+//     }
+//   },
+// );
 
-// Salvar Nome do Operador
-botaoSalvarOperador.addEventListener('click', () => {
-  const nome = operadorInput.value.trim();
+// // Salvar Nome do Operador
+// botaoSalvarOperador.addEventListener('click', () => {
+//   const nome = operadorInput.value.trim();
 
-  if (!nome) {
-    exibirStatus('erro', 'Digite um nome valido');
-    return;
-  }
+//   if (!nome) {
+//     exibirStatus('erro', 'Digite um nome valido');
+//     return;
+//   }
 
-  chrome.storage.local.set({ operador: nome }, () => {
-    exibirStatus('sucesso', 'Nome salvo com sucesso!');
-    setTimeout(() => {
-      ocultarStatus();
-    }, 2000);
-  });
-});
+//   chrome.storage.local.set({ operador: nome }, () => {
+//     exibirStatus('sucesso', 'Nome salvo com sucesso!');
+//     setTimeout(() => {
+//       ocultarStatus();
+//     }, 2000);
+//   });
+// });
 
 // Salvar Marca e Tarefa
 selectMarca.addEventListener('change', () => {
@@ -123,7 +123,7 @@ botoaoRodarTodasAbas.addEventListener('click', async () => {
       tarefa: selectTarefa.value,
     });
 
-    exibirStatus('successo', 'Processamento iniciado!');
+    exibirStatus('sucesso', 'Processamento iniciado!');
   } catch (erro) {
     exibirStatus('erro', `Erro: ${erro.message}`);
     adicionarLog('erro', erro.message);
@@ -149,23 +149,23 @@ chrome.runtime.onMessage.addListener(
   },
 );
 
-// Funcoes de UI
-function exibirStatus(tipo, menssagem) {
-  statusDiv.classList.remove('hidden', 'carregando', 'sucesso', 'erro');
-  statusDiv.classList.add(tipo);
-  textoStatus.textContent = menssagem;
+// // Funcoes de UI
+// function exibirStatus(tipo, menssagem) {
+//   statusDiv.classList.remove('hidden', 'carregando', 'sucesso', 'erro');
+//   statusDiv.classList.add(tipo);
+//   textoStatus.textContent = menssagem;
 
-  const icones = {
-    carregando: '⏳',
-    sucesso: '✅',
-    erro: '❌',
-  };
-  Iconestatus.textContent = icones[tipo] || '📋';
-}
+//   const icones = {
+//     carregando: '⏳',
+//     sucesso: '✅',
+//     erro: '❌',
+//   };
+//   Iconestatus.textContent = icones[tipo] || '📋';
+// }
 
-function ocultarStatus() {
-  statusDiv.classList.add('hidden');
-}
+// function ocultarStatus() {
+//   statusDiv.classList.add('hidden');
+// }
 
 function desabilitarButoes() {
   botaoRodarAutomacao.disabled = true;
@@ -177,22 +177,22 @@ function habilitarButoes() {
   botoaoRodarTodasAbas.disabled = false;
 }
 
-function limparLogs() {
-  logsDiv.innerHTML = '';
-}
+// function limparLogs() {
+//   logsDiv.innerHTML = '';
+// }
 
-function adicionarLog(tipo, menssagem) {
-  const entradaLog = document.createElement('div');
-  entradaLog.className = 'entrada-log ' + tipo;
-  entradaLog.textContent =
-    '[' + new Date().toLocaleTimeString() + '] ' + menssagem;
-  logsDiv.appendChild(entradaLog);
-  logsDiv.scrollTop = logsDiv.scrollHeight;
-}
+// function adicionarLog(tipo, menssagem) {
+//   const entradaLog = document.createElement('div');
+//   entradaLog.className = 'entrada-log ' + tipo;
+//   entradaLog.textContent =
+//     '[' + new Date().toLocaleTimeString() + '] ' + menssagem;
+//   logsDiv.appendChild(entradaLog);
+//   logsDiv.scrollTop = logsDiv.scrollHeight;
+// }
 
-function exibirLogs(logs) {
-  limparLogs();
-  for (let i = 0; i < logs.length; i++) {
-    adicionarLog(logs[i].tipo, logs[i].menssagem);
-  }
-}
+// function exibirLogs(logs) {
+//   limparLogs();
+//   for (let i = 0; i < logs.length; i++) {
+//     adicionarLog(logs[i].tipo, logs[i].menssagem);
+//   }
+// }

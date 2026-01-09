@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Automação de Tarefas GrupoLider",
+  "version": "2.0.0",
+  "description": "Automação de tarefas para leads no Salesforce",
+
+  "permissions": ["storage", "tabs", "activeTab", "scripting"],
+
+  "host_permissions": ["https://grupolider.lightning.force.com/*"],
+
+  "background": {
+    "service_worker": "background.bundle.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://grupolider.lightning.force.com/lightning/r/Lead/*"],
+      "js": ["content.bundle.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icones/logo-16.png",
+      "48": "icones/logo-48.png",
+      "128": "icones/logo-128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icones/logo-16.png",
+    "48": "icones/logo-48.png",
+    "128": "icones/logo-128.png"
+  }
+}

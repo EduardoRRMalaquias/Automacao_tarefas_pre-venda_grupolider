@@ -26,11 +26,11 @@ export const tratarLead = {
       await salvarDesativarModoEdicao(logs);
 
       logs.push(
-        window.utilitarios.log('success', '✅ Lead tratado com sucesso!'),
+        window.utilitarios.log('sucess', '✅ Lead tratado com sucesso!'),
       );
 
       return {
-        successo: true,
+        sucesso: true,
         cliente: {
           nomeFormatado,
           primeiroNome,
@@ -41,7 +41,7 @@ export const tratarLead = {
       };
     } catch (erro) {
       logs.push(
-        window.utilitarios.log('success', '✅ Lead tratado com sucesso!'),
+        window.utilitarios.log('sucess', '✅ Lead tratado com sucesso!'),
       );
       throw erro;
     }
