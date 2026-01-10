@@ -1,7 +1,6 @@
 import './marcas/gerenciadorMarcas.js';
-import './ultilitarios/seletores.js';
-import './ultilitarios/utilitarios.js';
 import './marcas/gwm.js';
+import { isPaginaLead } from './ultilitarios/utilitarios.js';
 
 (function () {
   'use strict';
@@ -9,12 +8,11 @@ import './marcas/gwm.js';
     '🚀 automação de Leads GrupoLider - Content Script Carregado com Webpack!',
   );
 
-  //Verifica se esta em uma pagina de lead
-  function isPaginaLead() {
-    return window.location.href.includes(
-      'lightning.force.com/lightning/r/Lead/',
-    );
-  }
+  // function isPaginaLead() {
+  //   return window.location.href.includes(
+  //     'lightning.force.com/lightning/r/Lead/',
+  //   );
+  // }
 
   //recebe mensagens enviadas do popup
   chrome.runtime.onMessage.addListener(
@@ -96,7 +94,8 @@ import './marcas/gwm.js';
     }
 
     //Verifica se a marca existe
-    const configuracaoMarca = window.gerenciadorMarcas.getMarca(marca);
+    const configuracaoMarca = gerenciadorMarcas.getMarca(marca);
+    console.log(configuracaoMarca, gerenciadorMarcas);
     if (!configuracaoMarca) {
       return {
         sucesso: false,

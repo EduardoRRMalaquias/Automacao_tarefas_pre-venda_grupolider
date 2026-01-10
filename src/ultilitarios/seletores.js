@@ -1,4 +1,4 @@
-window.seletores = {
+export const seletores = {
   // ========== SALESFORCE ==========
   salesforce: {
     // Botões de edição

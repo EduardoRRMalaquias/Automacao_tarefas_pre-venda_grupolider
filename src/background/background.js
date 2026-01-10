@@ -1,5 +1,4 @@
 // ========== Background Service Worker ==========
-
 import { processarAba } from './servicos.js';
 import { processarTodasAbas } from './servicos.js';
 
