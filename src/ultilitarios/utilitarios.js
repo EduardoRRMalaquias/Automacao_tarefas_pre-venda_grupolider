@@ -5,7 +5,7 @@ export function isPaginaLead() {
   return window.location.href.includes('lightning.force.com/lightning/r/Lead/');
 }
 
-// Exporta funções para window.utils
+// Exporta funções ultilitari\s
 export const esperar = (tempo) => {
   return new Promise((resolver) => {
     setTimeout(resolver, tempo);
@@ -73,8 +73,14 @@ export const clicarElemento = async (elemento, tempo = 300) => {
   await esperar(300);
 };
 
-// funçoes de Manipulação da pagina
+export const formatarNumeroTelefone = (numeroTelefone) => {
+  return numeroTelefone
+    .replace(/^\+?55/, '')
+    .replace(/\D/g, '')
+    .trim();
+};
 
+// funçoes de Manipulação da pagina
 export const ativarModoEdicao = async function (logs) {
   logs.push(log('info', 'Ativando modo de edição...'));
 
@@ -127,106 +133,6 @@ export const salvarDesativarModoEdicao = async function (logs) {
   }
 };
 
-export const formatarNome = async function (logs) {
-  logs.push(log('info', 'Formatando nome do lead'));
-
-  try {
-    const inputPrimeiroNome = await esperarElemento(
-      seletores.salesforce.inputs.primeiroNome,
-    );
-    const inputSobrenome = await esperarElemento(
-      seletores.salesforce.inputs.sobrenome,
-    );
-
-    if (!inputPrimeiroNome || !inputSobrenome) {
-      throw new Error('Campos de nome nao encontrados');
-    }
-
-    let primeiroNome = (inputPrimeiroNome.value || '').trim();
-    let sobrenome = (inputSobrenome.value || '').trim();
-
-    const nomeCompleto = `${primeiroNome} ${sobrenome}`.trim();
-
-    const partesNome = nomeCompleto.split(/\s+/);
-
-    if (partesNome.length === 0) {
-      throw new Error('Nome invalido/Lead Sem nome');
-    }
-
-    if (partesNome.length === 1) {
-      primeiroNome = '';
-      sobrenome = partesNome[0];
-    } else {
-      primeiroNome = partesNome[0];
-      sobrenome = partesNome.slice(1).join(' ');
-    }
-
-    primeiroNome = primeiroNome.toUpperCase();
-    sobrenome = sobrenome.toUpperCase();
-
-    inputPrimeiroNome.value = primeiroNome;
-    ativarEventosElementos(inputPrimeiroNome);
-    await esperar(100);
-
-    inputSobrenome.value = sobrenome;
-    ativarEventosElementos(inputSobrenome);
-    await esperar(100);
-
-    logs.push(
-      log('sucesso', 'Nome formatado: ' + primeiroNome + ' ' + sobrenome),
-    );
-    return { primeiroNome, sobrenome };
-  } catch (erro) {
-    logs.push(log('sucesso', `Erro ao formatar nome: ${erro.message}`));
-    throw erro;
-  }
-};
-
-export const formatarNumeroTelefone = async function (logs) {
-  logs.push(log('info', 'Formatando telefone...'));
-
-  try {
-    const inputCelular = document.querySelector(
-      seletores.salesforce.inputs.celular,
-    );
-    const inputTelefone = document.querySelector(
-      seletores.salesforce.inputs.telefone,
-    );
-
-    if (!inputCelular || !inputTelefone) {
-      throw new Error('Campos de telefone não encontrados');
-    }
-
-    let numeroTelefone =
-      (inputCelular.value || '').trim() || (inputCelular.value || '').trim();
-
-    if (!numeroTelefone) {
-      logs.push(log('alerta', 'Nenhum telefone encontrado'));
-      return null;
-    }
-
-    numeroTelefone = numeroTelefone
-      .replace(/^\+?55/, '')
-      .replace(/\D/g, '')
-      .trim();
-
-    inputCelular.value = numeroTelefone;
-    ativarEventosElementos(inputCelular);
-    await esperar(100);
-
-    if (inputTelefone.value) {
-      inputTelefone.value = 0;
-      ativarEventosElementos(inputTelefone);
-    }
-
-    logs.push(log('sucesso', `Telefone formatado: ${numeroTelefone}`));
-    return numeroTelefone;
-  } catch (erro) {
-    logs.push(log('erro', `Erro ao formatar telefone: ${erro.message}`));
-    throw erro;
-  }
-};
-
 export const selecionarOpcaoCombobox = async function (
   seletorBotao,
   seletorOpcoes,
@@ -259,82 +165,6 @@ export const selecionarOpcaoCombobox = async function (
     return true;
   } catch (erro) {
     logs.push(log('erro', `Erro ao selecionar  ${label}: ${erro.message}`));
-    throw erro;
-  }
-};
-
-export const preencherInputsInteresses = async function (logs) {
-  logs.push(log('info', 'Preenchendo campos de intedesse...'));
-
-  try {
-    //Selecionar Marca: GWM
-    await selecionarOpcaoCombobox(
-      seletores.salesforce.comboboxes.marca,
-      seletores.salesforce.opcoes.padrao,
-      'GWM',
-      logs,
-      'Marca',
-    );
-    await esperar(500);
-
-    // Categoria: Novos
-    await selecionarOpcaoCombobox(
-      seletores.salesforce.comboboxes.categoria,
-      seletores.salesforce.opcoes.padrao,
-      'Novos',
-      logs,
-      'Categoria',
-    );
-    await esperar(500);
-
-    // Interesse em: Carros
-    await selecionarOpcaoCombobox(
-      seletores.salesforce.comboboxes.interesse,
-      seletores.salesforce.opcoes.padrao,
-      'Carros',
-      logs,
-      'Interesse em',
-    );
-    await esperar(500);
-
-    logs.push(log(('sucesso', 'Campos de interesse preenchidos')));
-    return true;
-  } catch (erro) {
-    logs.push(log('erro', `Erro ao preencher interesse: ${erro.message}`));
-    throw erro;
-  }
-};
-
-export const formatarModeloInteresse = async function (logs) {
-  logs.push(log('info', 'Formatando modelo de interesse...'));
-
-  try {
-    const modeloTextarea = document.querySelector(
-      seletores.salesforce.inputs.modelo,
-    );
-
-    if (!modeloTextarea) {
-      logs.push(log('alerta', 'Campo Modelo interesse nao encontrado'));
-      return null;
-    }
-
-    let modelo = (modeloTextarea.value || '').trim();
-
-    if (!modelo) {
-      logs.push(log('alerta', 'Modelo interesse vazio'));
-      return null;
-    }
-
-    modelo = modelo.replace(/_/g, ' ').toUpperCase();
-
-    modeloTextarea.value = modelo;
-    ativarEventosElementos(modeloTextarea);
-    await esperar(100);
-
-    logs.push(log('sucesso', 'Modelo formatado: ' + modelo));
-    return modelo;
-  } catch (erro) {
-    logs.push(log('erro', `Erro ao formatar modelo: " + erro.message`));
     throw erro;
   }
 };

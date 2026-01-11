@@ -5,7 +5,7 @@ import {
   ativarModoEdicao,
   salvarDesativarModoEdicao,
   formatarNome,
-  formatarNumeroTelefone,
+  preencherNumeroTelefone,
   preencherInputsInteresses,
   formatarModeloInteresse,
   enviarTamplateWhatsapp,
@@ -30,20 +30,7 @@ const primeiroContatoGWM = {
       const operador = (dadosOperador.operador || 'Eduardo').split(' ')[0];
       logs.push(log('info', `Operador: ${operador}`));
 
-      await ativarModoEdicao(logs);
-
-      const nomeFormatado = await formatarNome(logs);
-
-      const primeiroNome = nomeFormatado.primeiroNome
-        ? nomeFormatado.primeiroNome
-        : nomeFormatado.sobrenome;
-
-      await formatarNumeroTelefone(logs);
-      await preencherInputsInteresses(logs);
-
-      const modelo = await formatarModeloInteresse(logs);
-
-      await salvarDesativarModoEdicao(logs);
+      // tratarLead.execute()
 
       const mensagem = await enviarTamplateWhatsapp(
         primeiroNome,

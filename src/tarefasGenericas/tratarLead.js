@@ -1,15 +1,15 @@
-const ativarModoEdicao = window.utilitarios.ativarModoEdicao;
-const salvarDesativarModoEdicao = window.utilitarios.salvarDesativarModoEdicao;
-const formatarNome = window.utilitarios.formatarNome;
-const formatarNumeroTelefone = window.utilitarios.formatarNumeroTelefone;
-const preencherInputsInteresses = window.utilitarios.preencherInputsInteresses;
-const formatarModeloInteresse = window.utilitarios.formatarModeloInteresse;
+import {
+  log,
+  ativarModoEdicao,
+  salvarDesativarModoEdicao,
+  formatarNumeroTelefone,
+} from '../ultilitarios/utilitarios.js';
 
-export const tratarLead = {
+export const tratarLead = {3
   nome: 'Tratar Lead',
 
   async execute(config, logs) {
-    logs.push(window.utilitarios.log('info', '📋 Tratando lead...'));
+    logs.push(log('info', '📋 Tratando lead...'));
 
     try {
       await ativarModoEdicao(logs);
@@ -18,20 +18,19 @@ export const tratarLead = {
 
       const nomeFormatado = primeiroNome ? primeiroNome : sobrenome;
 
-      const numeroTelefone = await formatarNumeroTelefone(logs);
-      await preencherInputsInteresses(logs);
+      const numeroTelefone = await preencherNumeroTelefone(logs);
+
+      await preencherInputsInteresses(config, logs);
 
       const modelo = await formatarModeloInteresse(logs);
 
       await salvarDesativarModoEdicao(logs);
 
-      logs.push(
-        window.utilitarios.log('sucess', '✅ Lead tratado com sucesso!'),
-      );
+      logs.push(log('sucess', '✅ Lead tratado com sucesso!'));
 
       return {
         sucesso: true,
-        cliente: {
+        dadosCliente: {
           nomeFormatado,
           primeiroNome,
           sobrenome,
@@ -40,10 +39,181 @@ export const tratarLead = {
         },
       };
     } catch (erro) {
-      logs.push(
-        window.utilitarios.log('sucess', '✅ Lead tratado com sucesso!'),
-      );
+      logs.push(log('sucess', '✅ Lead tratado com sucesso!'));
       throw erro;
     }
   },
+};
+
+export const formatarNome = async function (logs) {
+  logs.push(log('info', 'Formatando nome do lead'));
+
+  try {
+    const inputPrimeiroNome = await esperarElemento(
+      seletores.salesforce.inputs.primeiroNome,
+    );
+    const inputSobrenome = await esperarElemento(
+      seletores.salesforce.inputs.sobrenome,
+    );
+
+    if (!inputPrimeiroNome || !inputSobrenome) {
+      throw new Error('Campos de nome nao encontrados');
+    }
+
+    let primeiroNome = (inputPrimeiroNome.value || '').trim();
+    let sobrenome = (inputSobrenome.value || '').trim();
+
+    const nomeCompleto = `${primeiroNome} ${sobrenome}`.trim();
+
+    const partesNome = nomeCompleto.split(/\s+/);
+
+    if (partesNome.length === 0) {
+      throw new Error('Nome invalido/Lead Sem nome');
+    }
+
+    if (partesNome.length === 1) {
+      primeiroNome = '';
+      sobrenome = partesNome[0];
+    } else {
+      primeiroNome = partesNome[0];
+      sobrenome = partesNome.slice(1).join(' ');
+    }
+
+    primeiroNome = primeiroNome.toUpperCase();
+    sobrenome = sobrenome.toUpperCase();
+
+    inputPrimeiroNome.value = primeiroNome;
+    ativarEventosElementos(inputPrimeiroNome);
+    await esperar(100);
+
+    inputSobrenome.value = sobrenome;
+    ativarEventosElementos(inputSobrenome);
+    await esperar(100);
+
+    logs.push(
+      log('sucesso', 'Nome formatado: ' + primeiroNome + ' ' + sobrenome),
+    );
+    return { primeiroNome, sobrenome };
+  } catch (erro) {
+    logs.push(log('sucesso', `Erro ao formatar nome: ${erro.message}`));
+    throw erro;
+  }
+};
+
+export const preencherNumeroTelefone = async function (logs) {
+  logs.push(log('info', 'Formatando telefone...'));
+
+  try {
+    const inputCelular = document.querySelector(
+      seletores.salesforce.inputs.celular,
+    );
+    const inputTelefone = document.querySelector(
+      seletores.salesforce.inputs.telefone,
+    );
+
+    if (!inputCelular || !inputTelefone) {
+      throw new Error('Campos de telefone não encontrados');
+    }
+
+    let numeroTelefone =
+      (inputCelular.value || '').trim() || (inputCelular.value || '').trim();
+
+    if (!numeroTelefone) {
+      logs.push(log('alerta', 'Nenhum telefone encontrado'));
+      return null;
+    }
+
+    numeroTelefone = formatarNumeroTelefone(numeroTelefone);
+
+    inputCelular.value = numeroTelefone;
+    ativarEventosElementos(inputCelular);
+    await esperar(100);
+
+    if (inputTelefone.value) {
+      inputTelefone.value = 0;
+      ativarEventosElementos(inputTelefone);
+    }
+
+    logs.push(log('sucesso', `Telefone formatado: ${numeroTelefone}`));
+    return numeroTelefone;
+  } catch (erro) {
+    logs.push(log('erro', `Erro ao formatar telefone: ${erro.message}`));
+    throw erro;
+  }
+};
+
+export const preencherInputsInteresses = async function (config, logs) {
+  logs.push(log('info', 'Preenchendo campos de intedesse...'));
+
+  try {
+    //Selecionar Marca: GWM
+    await selecionarOpcaoCombobox(
+      seletores.salesforce.comboboxes.marca,
+      seletores.salesforce.opcoes.padrao,
+      config.marca.toUpperCase(),
+      logs,
+      'Marca',
+    );
+    await esperar(500);
+
+    // Categoria: Novos
+    await selecionarOpcaoCombobox(
+      seletores.salesforce.comboboxes.categoria,
+      seletores.salesforce.opcoes.padrao,
+      config.categoria || 'Novos',
+      logs,
+      'Categoria',
+    );
+    await esperar(500);
+
+    // Interesse em: Carros
+    await selecionarOpcaoCombobox(
+      seletores.salesforce.comboboxes.interesse,
+      seletores.salesforce.opcoes.padrao,
+      'Carros',
+      logs,
+      'Interesse em',
+    );
+    await esperar(500);
+
+    logs.push(log(('sucesso', 'Campos de interesse preenchidos')));
+    return true;
+  } catch (erro) {
+    logs.push(log('erro', `Erro ao preencher interesse: ${erro.message}`));
+    throw erro;
+  }
+};
+
+export const formatarModeloInteresse = async function (logs) {
+  logs.push(log('info', 'Formatando modelo de interesse...'));
+
+  try {
+    const modeloTextarea = document.querySelector(
+      seletores.salesforce.inputs.modelo,
+    );
+
+    if (!modeloTextarea) {
+      logs.push(log('alerta', 'Campo Modelo interesse nao encontrado'));
+      return null;
+    }
+
+    let modelo = (modeloTextarea.value || '').trim();
+
+    if (!modelo) {
+      logs.push(log('alerta', 'Modelo interesse vazio'));
+      return null;
+    }
+
+    modelo = modelo.replace(/_/g, ' ').toUpperCase();
+
+    modeloTextarea.value = modelo;
+    ativarEventosElementos(modeloTextarea);
+    await esperar(100);
+
+    logs.push(log('sucesso', 'Modelo formatado: ' + modelo));
+    return modelo;
+  } catch (erro) {
+    logs.push(log('erro', `Erro ao formatar modelo: " + erro.message`));
+    throw erro;
+  }
 };
