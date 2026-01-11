@@ -1,8 +1,17 @@
-'use strict';
-import { seletores } from './seletores';
+"use strict";
+import { seletores } from "./seletores";
+
+export async function getOperador() {
+  return new Promise((resolver) => {
+    chrome.storage.local.get(["operador"], (resultado) => {
+      const operador = (resultado.operador || "Eduardo").split(" ")[0];
+      resolver(operador);
+    });
+  });
+}
 
 export function isPaginaLead() {
-  return window.location.href.includes('lightning.force.com/lightning/r/Lead/');
+  return window.location.href.includes("lightning.force.com/lightning/r/Lead/");
 }
 
 // Exporta funções ultilitari\s
@@ -15,12 +24,12 @@ export const esperar = (tempo) => {
 export const log = (tipo, mensagem) => {
   const legenda =
     {
-      info: '📋',
-      sucesso: '✅',
-      erro: '❌',
-      alerta: '⚠️',
-    }[tipo] || '📋';
-  console.log(legenda + ' ' + mensagem);
+      info: "📋",
+      sucesso: "✅",
+      erro: "❌",
+      alerta: "⚠️",
+    }[tipo] || "📋";
+  console.log(legenda + " " + mensagem);
   return { tipo, mensagem };
 };
 
@@ -60,12 +69,12 @@ export const esperarElemento = (seletor, tempo = 10000) => {
 };
 
 export const ativarEventosElementos = (elemento) => {
-  console.log('ativando eventos elementos');
-  elemento.dispatchEvent(new Event('click', { bubbles: true }));
-  elemento.dispatchEvent(new Event('input', { bubbles: true }));
-  elemento.dispatchEvent(new Event('change', { bubbles: true }));
-  elemento.dispatchEvent(new Event('blur', { bubbles: true }));
-  elemento.dispatchEvent(new Event('keyup', { bubbles: true }));
+  console.log("ativando eventos elementos");
+  elemento.dispatchEvent(new Event("click", { bubbles: true }));
+  elemento.dispatchEvent(new Event("input", { bubbles: true }));
+  elemento.dispatchEvent(new Event("change", { bubbles: true }));
+  elemento.dispatchEvent(new Event("blur", { bubbles: true }));
+  elemento.dispatchEvent(new Event("keyup", { bubbles: true }));
 };
 
 export const clicarElemento = async (elemento, tempo = 300) => {
@@ -75,59 +84,59 @@ export const clicarElemento = async (elemento, tempo = 300) => {
 
 export const formatarNumeroTelefone = (numeroTelefone) => {
   return numeroTelefone
-    .replace(/^\+?55/, '')
-    .replace(/\D/g, '')
+    .replace(/^\+?55/, "")
+    .replace(/\D/g, "")
     .trim();
 };
 
 // funçoes de Manipulação da pagina
 export const ativarModoEdicao = async function (logs) {
-  logs.push(log('info', 'Ativando modo de edição...'));
+  logs.push(log("info", "Ativando modo de edição..."));
 
   try {
     const botaoEdicao = await esperarElemento(
       seletores.salesforce.botoes.editar,
-      5000,
+      5000
     );
     await clicarElemento(botaoEdicao);
-    logs.push(log('sucesso', 'Modo de edicao ativado'));
+    logs.push(log("sucesso", "Modo de edicao ativado"));
     await esperar(1000);
     return true;
   } catch (erro) {
     logs.push(
       log(
-        'erro',
-        `Falha ao salvar alterações ou desativar edicao: ${erro.message}`,
-      ),
+        "erro",
+        `Falha ao salvar alterações ou desativar edicao: ${erro.message}`
+      )
     );
     return false;
   }
 };
 
 export const salvarDesativarModoEdicao = async function (logs) {
-  logs.push(log('info', 'Salvando alterações e desativando modo de edição'));
+  logs.push(log("info", "Salvando alterações e desativando modo de edição"));
 
   try {
     const botaoSalvarEdicao = await esperarElemento(
       seletores.salesforce.botoes.salvarEdicao,
-      5000,
+      5000
     );
 
     if (!botaoSalvarEdicao) {
-      throw new Error('Botão de salvar edicao não encontrado');
+      throw new Error("Botão de salvar edicao não encontrado");
     }
 
     await clicarElemento(botaoSalvarEdicao);
-    logs.push(log('sucesso', 'Altyerações salvas e modo de edicao desativado'));
+    logs.push(log("sucesso", "Altyerações salvas e modo de edicao desativado"));
 
     await esperar(1000);
     return true;
   } catch (erro) {
     logs.push(
       log(
-        'erro',
-        `Falha ao salvar alterações ou desativar edição: ${erro.message}`,
-      ),
+        "erro",
+        `Falha ao salvar alterações ou desativar edição: ${erro.message}`
+      )
     );
     return false;
   }
@@ -138,7 +147,7 @@ export const selecionarOpcaoCombobox = async function (
   seletorOpcoes,
   opcaoTexto,
   logs,
-  label,
+  label
 ) {
   try {
     const botao = await esperarElemento(seletorBotao, 5000);
@@ -149,7 +158,7 @@ export const selecionarOpcaoCombobox = async function (
     const opcoes = Array.from(document.querySelectorAll(seletorOpcoes));
 
     const opcao = opcoes.find((opcao) => {
-      const texto = (opcao.textContent || '').trim().toLocaleUpperCase();
+      const texto = (opcao.textContent || "").trim().toLocaleUpperCase();
       return texto === opcaoTexto.toLocaleUpperCase();
     });
 
@@ -158,13 +167,13 @@ export const selecionarOpcaoCombobox = async function (
     }
 
     await clicarElemento(opcao);
-    logs.push(log('sucesso', `${label} selecionado: ${opcaoTexto}`));
+    logs.push(log("sucesso", `${label} selecionado: ${opcaoTexto}`));
 
     await esperar(500);
 
     return true;
   } catch (erro) {
-    logs.push(log('erro', `Erro ao selecionar  ${label}: ${erro.message}`));
+    logs.push(log("erro", `Erro ao selecionar  ${label}: ${erro.message}`));
     throw erro;
   }
 };
@@ -173,43 +182,41 @@ export const enviarTamplateWhatsapp = async function (
   primeiroNome,
   modelo,
   operador,
-  logs,
+  logs
 ) {
-  logs.push(log('info', 'Enviando template WhatsApp...'));
+  logs.push(log("info", "Enviando template WhatsApp..."));
 
   try {
-    let tamplatesAberto = false;
-
     //Botão "Enviar Tamplate"
     try {
-      logs.push(log('info', 'Tentando botão central...'));
+      logs.push(log("info", "Tentando botão central..."));
       const botaoEnviarTamplate = await esperarElemento(
         seletores.beetalk.botoes.enviarTamplate,
-        3000,
+        3000
       );
       await clicarElemento(botaoEnviarTamplate, 800);
-      logs.push(log('sucesso', 'Botão central clicado'));
+      logs.push(log("sucesso", "Botão central clicado"));
       tamplatesAberto = true;
     } catch (erroTentativa1) {
       logs.push(
-        log('info', 'Botão central não encontrado, tentando alternativa...'),
+        log("info", "Botão central não encontrado, tentando alternativa...")
       );
     }
 
     //botao tamplate rapido
     if (!tamplatesAberto) {
       try {
-        logs.push(log('info', 'Tentando quick-messages...'));
+        logs.push(log("info", "Tentando quick-messages..."));
         const tampleteRapido = await esperarElemento(
           seletores.beetalk.botoes.tamplateRapido,
-          3000,
+          3000
         );
         console.log(tampleteRapido);
         ativarEventosElementos(tampleteRapido);
         tamplatesAberto = true;
       } catch (erroTentativa2) {
         throw new Error(
-          'Nenhum botão de template encontrado (center-button ou quick-messages)',
+          "Nenhum botão de template encontrado (center-button ou quick-messages)"
         );
       }
     }
@@ -217,77 +224,63 @@ export const enviarTamplateWhatsapp = async function (
     //pasta de tamplates
     await esperar(500);
     const pastaTamplate = await esperarElemento(
-      seletores.beetalk.pastaTamplate('GW LIDER TEMPLATE'),
-      5000,
+      seletores.beetalk.pastaTamplate("GW LIDER TEMPLATE"),
+      5000
     );
     await clicarElemento(pastaTamplate, 800);
-    logs.push(log('sucesso', 'Pasta GW LIDER TEMPLATE aberta'));
+    logs.push(log("sucesso", "Pasta GW LIDER TEMPLATE aberta"));
 
     await esperar(500);
     const botaoTamplate = await esperarElemento(
-      seletores.beetalk.botaoTamplate('a0EU6000003BVunMAG'),
-      5000,
+      seletores.beetalk.botaoTamplate("a0EU6000003BVunMAG"),
+      5000
     );
     await clicarElemento(botaoTamplate, 1000);
-    logs.push(log('sucesso', 'Template SAUDACAO GW 2 selecionado'));
+    logs.push(log("sucesso", "Template SAUDACAO GW 2 selecionado"));
 
     await esperar(800);
 
     const campo1 = await esperarElemento(seletores.beetalk.campo(1), 5000);
-    campo1.value = primeiroNome + ' ';
+    campo1.value = primeiroNome + " ";
     ativarEventosElementos(campo1);
     await esperar(200);
-    logs.push(log('sucesso', 'Campo 1 preenchido: ' + primeiroNome));
+    logs.push(log("sucesso", "Campo 1 preenchido: " + primeiroNome));
 
     const campo2 = await esperarElemento(seletores.beetalk.campo(2), 5000);
     campo2.value = operador;
     ativarEventosElementos(campo2);
     await esperar(200);
-    logs.push(log('sucesso', 'Campo 2 preenchido: ' + operador));
+    logs.push(log("sucesso", "Campo 2 preenchido: " + operador));
 
     const campo3 = await esperarElemento(seletores.beetalk.campo(3), 5000);
-    campo3.value = modelo || 'HAVAL H6';
+    campo3.value = modelo || "HAVAL H6";
     ativarEventosElementos(campo3);
     await esperar(200);
-    logs.push(log('sucesso', 'Campo 3 preenchido: ' + modelo));
-
-    const botaoEnviar = Array.from(document.querySelectorAll('button')).find(
-      (botao) => {
-        return botao.textContent.includes('Enviar');
-      },
-    );
+    logs.push(log("sucesso", "Campo 3 preenchido: " + modelo));
 
     if (!botaoEnviar) {
-      throw new Error('Botao Enviar nao encontrado');
+      throw new Error("Botao Enviar nao encontrado");
     }
 
     await clicarElemento(botaoEnviar, 2000);
-    logs.push(log('sucesso', 'Template enviado'));
-
+    logs.push(log("sucesso", "Template enviado"));
     await esperar(5000);
-
-    const mensagems = document.querySelectorAll(seletores.beetalk.mensagems);
-    const mensagemElemento = mensagems[mensagems.length - 1];
-    const mensagem = mensagemElemento.textContent.trim();
-    logs.push(log('sucesso', 'Mensagem capturada'));
-
-    return mensagem;
   } catch (erro) {
-    logs.push(log('erro', `Erro ao enviar tamplate: ${erro.message} `));
+    logs.push(log("erro", `Erro ao enviar tamplate: ${erro.message} `));
     throw erro;
   }
 };
 
-export const registrarTarefa = async function (mensagem, logs) {
-  logs.push(log('info', 'Criando Tarefa...'));
+export const registrarTarefa = async function (mensagem, tipo, assunto, logs) {
+  logs.push(log("info", "Criando Tarefa..."));
 
   try {
     const botaoNovaTarefa = await esperarElemento(
       seletores.salesforce.botoes.novaTarefa,
-      5000,
+      5000
     );
     await clicarElemento(botaoNovaTarefa, 1500);
-    logs.push(log('sucesso', 'Modal de tarefa aberto'));
+    logs.push(log("sucesso", "Modal de tarefa aberto"));
 
     await esperar(1000);
 
@@ -295,9 +288,9 @@ export const registrarTarefa = async function (mensagem, logs) {
     await selecionarOpcaoCombobox(
       seletores.salesforce.comboboxes.tipoTarefa,
       seletores.salesforce.opcoes.menu,
-      'Contato',
+      tipo,
       logs,
-      'Tipo',
+      "Tipo"
     );
     await esperar(500);
 
@@ -305,15 +298,15 @@ export const registrarTarefa = async function (mensagem, logs) {
     await selecionarOpcaoCombobox(
       seletores.salesforce.comboboxes.assunto,
       seletores.salesforce.opcoes.padrao,
-      'Primeiro Contato',
+      assunto,
       logs,
-      'Assunto',
+      "Assunto"
     );
     await esperar(500);
 
     // Campo Data de Vencimento
     const InputData = await esperarElemento(
-      seletores.salesforce.tarefa.inputData,
+      seletores.salesforce.tarefa.inputData
     );
 
     if (!InputData) {
@@ -321,8 +314,8 @@ export const registrarTarefa = async function (mensagem, logs) {
     }
 
     const hoje = new Date();
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, "0");
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
     const ano = hoje.getFullYear();
     const dataFormatada = `${dia}/${mes}/${ano}`;
 
@@ -330,11 +323,11 @@ export const registrarTarefa = async function (mensagem, logs) {
     ativarEventosElementos(InputData);
 
     await esperar(500);
-    logs.push(log('sucesso', 'Data de vencimento: ' + dataFormatada));
+    logs.push(log("sucesso", "Data de vencimento: " + dataFormatada));
 
     // Campo Comentario da tarefa
     const textareaComentario = document.querySelector(
-      seletores.salesforce.tarefa.textareaComentario,
+      seletores.salesforce.tarefa.textareaComentario
     );
 
     if (!textareaComentario) {
@@ -346,27 +339,27 @@ export const registrarTarefa = async function (mensagem, logs) {
 
     await esperar(300);
 
-    logs.push(log('sucesso', 'Comentarios preenchidos'));
+    logs.push(log("sucesso", "Comentarios preenchidos"));
 
     // Check de conjunto de lembretes
 
     const secaoTarefa = await esperarElemento(
-      seletores.salesforce.tarefa.secaoTarefa,
+      seletores.salesforce.tarefa.secaoTarefa
     );
     const checkboxLembrete = secaoTarefa.querySelectorAll(
-      'lightning-input input[type="checkbox"]',
+      'lightning-input input[type="checkbox"]'
     );
 
     if (!checkboxLembrete) {
       if (checkboxLembrete.checked) {
         await clicarElemento(checkboxLembrete);
-        logs.push(log('sucesso', 'Lembrete desmarcado'));
+        logs.push(log("sucesso", "Lembrete desmarcado"));
       } else {
-        logs.push(log('info', 'Lembrete ja estava desmarcado'));
+        logs.push(log("info", "Lembrete ja estava desmarcado"));
       }
     } else {
       logs.push(
-        log('warning', 'Checkbox de lembrete nao encontrado (nao critico)'),
+        log("warning", "Checkbox de lembrete nao encontrado (nao critico)")
       );
     }
 
@@ -374,21 +367,21 @@ export const registrarTarefa = async function (mensagem, logs) {
 
     // Salvar Tarefa
     const botaoSalvarTarefa = document.querySelector(
-      seletores.salesforce.botoes.salvarTarefa,
+      seletores.salesforce.botoes.salvarTarefa
     );
 
     if (!botaoSalvarTarefa) {
-      throw new Error('Botao Salvar nao encontrado');
+      throw new Error("Botao Salvar nao encontrado");
     }
 
     await clicarElemento(botaoSalvarTarefa, 2000);
-    logs.push(log('sucesso', 'tarefa Salva'));
+    logs.push(log("sucesso", "tarefa Salva"));
 
     return true;
   } catch (erro) {
-    logs.push(log('erro', `Erro ao criar tarefa: ${erro.message}`));
+    logs.push(log("erro", `Erro ao criar tarefa: ${erro.message}`));
     throw erro;
   }
 };
 
-console.log('✅ Utilitários carregados');
+console.log("✅ Utilitários carregados");

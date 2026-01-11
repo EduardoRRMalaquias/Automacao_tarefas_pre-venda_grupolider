@@ -1,67 +1,66 @@
-'use strict';
-import { gerenciadorMarcas } from './gerenciadorMarcas.js';
-import {
-  log,
-  ativarModoEdicao,
-  salvarDesativarModoEdicao,
-  formatarNome,
-  preencherNumeroTelefone,
-  preencherInputsInteresses,
-  formatarModeloInteresse,
-  enviarTamplateWhatsapp,
-  registrarTarefa,
-} from '../ultilitarios/utilitarios.js';
+import { gerenciadorMarcas } from "./gerenciadorMarcas";
+import { tratarLead } from "../tarefasGenericas/tratarLead";
+import { primeiroContato } from "../tarefasDiarias/primeiroContato";
+import { segundoContato } from "../tarefasDiarias/segundoContato";
 
-const primeiroContatoGWM = {
-  nome: 'Primeiro Contato GWM',
-  descrição:
-    'Formata lead, envia templatede mensagem pelo beetalk e cria tarefa',
+const configuracaoGWM = {
+  marca: "GWM",
+  categoria: "Novos",
 
-  executar: async (contexto) => {
-    const logs = [];
+  pasta: "GW LIDER TEMPLATE",
 
-    logs.push(log('info', 'Iniciando automacao: Primeiro Contato GWM'));
+  tamplates: {
+    primeiroContatoModelo: {
+      nome: "SAUDACAO GW 2",
+      id: "a0EU6000003BVunMAG",
+      campos: [
+        { id: 1, valor: "nome" },
+        { id: 2, valor: "operador" },
+        { id: 3, valor: "modelo" },
+      ],
+    },
 
-    try {
-      const dadosOperador = await new Promise((resolver) => {
-        chrome.storage.local.get('operador', resolver);
-      });
+    primeiroContatosemModelo: {
+      nome: "PRIMEIRO CONTATO GW 2",
+      id: "a0EU6000003BVy1MAG",
+      campos: [
+        { id: 1, valor: "nome" },
+        { id: 2, valor: "saudacao" },
+        { id: 3, valor: "operador" },
+      ],
+    },
 
-      const operador = (dadosOperador.operador || 'Eduardo').split(' ')[0];
-      logs.push(log('info', `Operador: ${operador}`));
-
-      // tratarLead.execute()
-
-      const mensagem = await enviarTamplateWhatsapp(
-        primeiroNome,
-        modelo,
-        operador,
-        logs,
-      );
-
-      await registrarTarefa(mensagem, logs);
-
-      return {
-        sucesso: true,
-        logs: logs,
-      };
-    } catch (erro) {
-      logs.push(log('erro', `Falha na automacao ${erro.message}`));
-      return {
-        sucesso: false,
-        erro: erro.message,
-        logs: logs,
-      };
-    }
+    segundoContato: {
+      nome: "'SEGUNDA TENTAT",
+      id: "a0EU6000002sFwzMAE",
+    },
   },
 };
 
-gerenciadorMarcas.cadastrarMarca('gwm', {
-  nome: 'GWM',
-  descricao: 'Great Wall Motors',
+gerenciadorMarcas.cadastrarMarca("gwm", {
+  nome: "GWM",
+  descricao: "Great Wall Motors",
+  config: configuracaoGWM,
+
   tarefas: {
-    'primeiro-contato': primeiroContatoGWM,
+    "tratar-leads": {
+      ...tratarLead,
+      executar: (contexto) =>
+        tratarLead.executar({
+          ...contexto,
+          configMarca: configuracaoGWM,
+        }),
+    },
+
+    "primeiro-contato": {
+      ...primeiroContato,
+      executar: (contexto) =>
+        primeiroContato.executar({
+          ...contexto,
+          configMarca: configuracaoGWM,
+        }),
+    },
   },
 });
 
-console.log('Marca GWM registrada com sucesso');
+console.log("✅ Marca GWM registrada com sucesso");
