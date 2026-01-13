@@ -1,25 +1,25 @@
-import { tratarLeads } from "../tarefasGenericas/tratarLead.js";
-import { enviarTamplate } from "../tarefasGenericas/enviarTemplate.js";
+import { tratarLead } from '../tarefasGenericas/tratarLead.js';
+import { enviarTamplate } from '../tarefasGenericas/enviarTemplate.js';
 import {
   getOperador,
   log,
   registrarTarefa,
-} from "../ultilitarios/utilitarios.js";
+} from '../ultilitarios/utilitarios.js';
 
 export const primeiroContato = {
-  nome: "Primeiro Contato",
+  nome: 'Primeiro Contato',
 
   async executar({ configMarca }) {
     const logs = [];
 
-    logs.push(log("info", `Iniciando Primeiro Contato - ${configMarca.marca}`));
+    logs.push(log('info', `Iniciando Primeiro Contato - ${configMarca.marca}`));
 
     try {
-      const operador = getOperador();
+      const operador = await getOperador();
 
-      const resultadoTratamentoLeads = await tratarLeads.executar(
+      const resultadoTratamentoLeads = await tratarLead.executar(
         configMarca,
-        logs
+        logs,
       );
       const { nomeFormatado, modelo } = resultadoTratamentoLeads.dadosLeads;
 
@@ -40,22 +40,22 @@ export const primeiroContato = {
         nomeFormatado,
         modelo,
         operador,
-        logs
+        logs,
       );
 
       const { mensagem } = resultadoEnvioTamplate;
-      const { tipo, assunto } = configMarca.tarefa;
+      const { tipo, assunto } = configTamplate.registroTarefa;
 
       await registrarTarefa(mensagem, tipo, assunto, logs);
 
-      logs.push(log("sucesso", "Primeiro Contato concluído!"));
+      logs.push(log('sucesso', 'Primeiro Contato concluído!'));
 
       return {
         sucesso: true,
         logs,
       };
     } catch (erro) {
-      logs.push(log("erro", `Erro no Primeiro Contato: ${erro.message}`));
+      logs.push(log('erro', `Erro no Primeiro Contato: ${erro.message}`));
       return {
         sucesso: false,
         erro: erro.message,

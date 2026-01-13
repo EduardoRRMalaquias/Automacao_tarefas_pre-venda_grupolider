@@ -103,7 +103,7 @@ export async function processarAba(idAba, marca, tarefa) {
 
       //fechar aba
       try {
-        await chrome.tabs.remove(idAba);
+        // await chrome.tabs.remove(idAba);
         console.log(`🗑️ Aba ${idAba} fechada`);
         enviarLogPopup('info', `Aba ${idAba} fechada`);
       } catch (erro) {

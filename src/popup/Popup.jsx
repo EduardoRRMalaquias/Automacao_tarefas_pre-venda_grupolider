@@ -25,7 +25,7 @@ function Popup() {
       (configuracoes) => {
         setConfiguracao((configuracao) => ({
           ...configuracao,
-          operador: configuracoes.operador || 'Eduardo',
+          operador: configuracoes.operador,
           marcaSelecionada: configuracoes.marcaSelecionada || 'gwm',
           tarefaSelecionada:
             configuracoes.tarefaSelecionada || 'primeiro-contato',
@@ -151,6 +151,7 @@ function Popup() {
                 value={configuracao.tarefaSelecionada}
                 onChange={mudarTarefa}
               >
+                <option value="tratar-lead">Tratar Lead</option>
                 <option value="primeiro-contato">Primeiro Contato</option>
                 <option value="segundo-contato">Segundo Contato</option>
                 <option value="cadastrar-leads">cadastrar Leads</option>

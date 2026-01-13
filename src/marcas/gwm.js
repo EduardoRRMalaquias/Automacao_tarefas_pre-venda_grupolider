@@ -1,58 +1,65 @@
-import { gerenciadorMarcas } from "./gerenciadorMarcas";
-import { tratarLead } from "../tarefasGenericas/tratarLead";
-import { primeiroContato } from "../tarefasDiarias/primeiroContato";
-import { segundoContato } from "../tarefasDiarias/segundoContato";
+import { gerenciadorMarcas } from './gerenciadorMarcas';
+import { tratarLead } from '../tarefasGenericas/tratarLead';
+import { primeiroContato } from '../tarefasDiarias/primeiroContato';
 
 const configuracaoGWM = {
-  marca: "GWM",
-  categoria: "Novos",
+  marca: 'GWM',
+  categoria: 'Novos',
 
-  pasta: "GW LIDER TEMPLATE",
+  pasta: 'GW LIDER TEMPLATE',
 
   tamplates: {
     primeiroContatoModelo: {
-      nome: "SAUDACAO GW 2",
-      id: "a0EU6000003BVunMAG",
+      nomeTamplate: 'SAUDACAO GW 2',
+      idTamplate: 'a0EU6000003BVunMAG',
       campos: [
-        { id: 1, valor: "nome" },
-        { id: 2, valor: "operador" },
-        { id: 3, valor: "modelo" },
+        { id: 1, valor: 'nome' },
+        { id: 2, valor: 'operador' },
+        { id: 3, valor: 'modelo' },
       ],
+      registroTarefa: {
+        tipo: 'Contato',
+        assunto: 'Primeiro Contato',
+      },
     },
 
-    primeiroContatosemModelo: {
-      nome: "PRIMEIRO CONTATO GW 2",
-      id: "a0EU6000003BVy1MAG",
+    primeiroContatoSemModelo: {
+      nomeTamplate: 'PRIMEIRO CONTATO GW 2',
+      idTamplate: 'a0EU6000003BVy1MAG',
       campos: [
-        { id: 1, valor: "nome" },
-        { id: 2, valor: "saudacao" },
-        { id: 3, valor: "operador" },
+        { id: 1, valor: 'nome' },
+        { id: 2, valor: 'saudacao' },
+        { id: 3, valor: 'operador' },
       ],
+      registroTarefa: {
+        tipo: 'Contato',
+        assunto: 'Primeiro Contato',
+      },
     },
 
     segundoContato: {
-      nome: "'SEGUNDA TENTAT",
-      id: "a0EU6000002sFwzMAE",
+      nomeTamplate: 'SEGUNDA TENTAT',
+      idTamplate: 'a0EU6000002sFwzMAE',
+      registroTarefa: {
+        tipo: 'Contato',
+        assunto: 'Enviado Nova Mensagem',
+      },
     },
   },
 };
 
-gerenciadorMarcas.cadastrarMarca("gwm", {
-  nome: "GWM",
-  descricao: "Great Wall Motors",
+gerenciadorMarcas.cadastrarMarca('gwm', {
+  nome: 'GWM',
+  descricao: 'Great Wall Motors',
   config: configuracaoGWM,
 
   tarefas: {
-    "tratar-leads": {
+    'tratar-lead': {
       ...tratarLead,
-      executar: (contexto) =>
-        tratarLead.executar({
-          ...contexto,
-          configMarca: configuracaoGWM,
-        }),
+      executar: () => tratarLead.executar(configuracaoGWM),
     },
 
-    "primeiro-contato": {
+    'primeiro-contato': {
       ...primeiroContato,
       executar: (contexto) =>
         primeiroContato.executar({
@@ -63,4 +70,4 @@ gerenciadorMarcas.cadastrarMarca("gwm", {
   },
 });
 
-console.log("✅ Marca GWM registrada com sucesso");
+console.log('✅ Marca GWM registrada com sucesso');
