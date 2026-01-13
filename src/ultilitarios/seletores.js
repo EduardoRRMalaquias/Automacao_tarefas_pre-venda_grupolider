@@ -6,7 +6,8 @@ export const seletores = {
       editar: 'button.inline-edit-trigger[title*="Editar"]',
       salvarEdicao: 'lightning-button button[name="SaveEdit"]',
       novaTarefa: 'button[aria-label="Nova tarefa"]',
-      salvarTarefa: "button.cuf-publisherShareButton",
+      salvarTarefa: 'button.cuf-publisherShareButton',
+      salvarTentativa: 'lightning-button[variant="brand"] button',
     },
 
     // Inputs de Lead
@@ -25,12 +26,13 @@ export const seletores = {
       interesse: 'button[role="combobox"][aria-label="Interesse em"]',
       tipoTarefa: 'a[role="combobox"][aria-labelledby*="label"]',
       assunto: 'lightning-grouped-combobox [role="combobox"]',
+      status: 'button[role="combobox"][aria-label="Status"]',
     },
 
     // Opções de combobox
     opcoes: {
       padrao: 'lightning-base-combobox-item, [role="option"]',
-      menu: ".uiMenuItem a",
+      menu: '.uiMenuItem a',
     },
 
     // Task fields
@@ -46,7 +48,7 @@ export const seletores = {
   // ========== BEETALK (WhatsApp) ==========
   beetalk: {
     botoes: {
-      enviarTamplate: "p.center-button",
+      enviarTamplate: 'p.center-button',
       tamplateRapido: 'use[data-name="quick-messages"]',
       enviar: 'button:has-text("Enviar")', // Precisa ajustar
     },

@@ -89,6 +89,47 @@ export const formatarNumeroTelefone = (numeroTelefone) => {
     .trim();
 };
 
+//Salvar Satatus Tentativa
+export const salvarStatusTentativa = async (tentiva = null, logs) => {
+  logs.push(log('info', 'Salvando Status de Tentativa...'));
+
+  const botaoAbrirModalTentativa = document.querySelector(
+    seletores.salesforce.botoes.salvarTentativa,
+  );
+  const textoBotao = botaoAbrirModalTentativa.textContent;
+
+  let status;
+  if (tentiva) {
+    if (textoBotao !== `Salvar Status ${tentiva - 1}° Tentativa`) {
+      return;
+    }
+    status = 'Não Concluído';
+  } else {
+    status = 'Concluído';
+  }
+
+  await clicarElemento(botaoAbrirModalTentativa);
+  await esperar(800);
+
+  await selecionarOpcaoCombobox(
+    seletores.salesforce.comboboxes.status,
+    seletores.salesforce.opcoes.padrao,
+    status,
+    logs,
+    'Status',
+  );
+  await esperar(200);
+
+  const botaoSalvarTentativa = document.querySelectorAll(
+    seletores.salesforce.botoes.salvarTentativa,
+  )[2];
+
+  await clicarElemento(botaoSalvarTentativa);
+  await esperar(200);
+
+  logs.push(log('info', 'Status de Tentativa salvo com sucesso'));
+};
+
 // funçoes de Manipulação da pagina
 export const ativarModoEdicao = async function (logs) {
   logs.push(log('info', 'Ativando modo de edição...'));
@@ -149,9 +190,10 @@ export const selecionarOpcaoCombobox = async function (
 
     const opcoes = Array.from(document.querySelectorAll(seletorOpcoes));
 
+    console.log(opcaoTexto);
     const opcao = opcoes.find((opcao) => {
-      const texto = (opcao.textContent || '').trim().toLocaleUpperCase();
-      return texto === opcaoTexto.toLocaleUpperCase();
+      const texto = (opcao.textContent || '').trim().toUpperCase();
+      return texto === opcaoTexto.toUpperCase();
     });
 
     if (!opcao) {

@@ -1,6 +1,7 @@
 import { gerenciadorMarcas } from './gerenciadorMarcas';
 import { tratarLead } from '../tarefasGenericas/tratarLead';
 import { primeiroContato } from '../tarefasDiarias/primeiroContato';
+import { segundoContato } from '../tarefasDiarias/segundoContato';
 
 const configuracaoGWM = {
   marca: 'GWM',
@@ -63,6 +64,15 @@ gerenciadorMarcas.cadastrarMarca('gwm', {
       ...primeiroContato,
       executar: (contexto) =>
         primeiroContato.executar({
+          ...contexto,
+          configMarca: configuracaoGWM,
+        }),
+    },
+
+    'segundo-contato': {
+      ...segundoContato,
+      executar: (contexto) =>
+        segundoContato.executar({
           ...contexto,
           configMarca: configuracaoGWM,
         }),

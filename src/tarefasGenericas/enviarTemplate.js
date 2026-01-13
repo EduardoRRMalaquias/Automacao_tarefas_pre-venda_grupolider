@@ -13,12 +13,11 @@ export const enviarTamplate = {
   async executar(
     pasta,
     { nomeTamplate, idTamplate, campos },
-    nomeFormatado,
-    modelo,
-    operador,
+    nomeFormatado = '',
+    modelo = '',
+    operador = '',
     logs,
   ) {
-    console.log(nomeTamplate, idTamplate, campos);
     logs.push(log('info', 'Enviando template WhatsApp...'));
 
     try {
