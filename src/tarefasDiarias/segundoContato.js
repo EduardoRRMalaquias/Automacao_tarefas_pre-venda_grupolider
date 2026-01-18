@@ -1,4 +1,4 @@
-import { enviarTamplate } from '../tarefasGenericas/enviarTemplate.js';
+import { enviartemplate } from '../tarefasGenericas/enviarTemplate.js';
 import {
   log,
   salvarStatusTentativa,
@@ -14,21 +14,27 @@ export const segundoContato = {
     logs.push(log('info', `Iniciando Segundo Contato - ${configMarca.marca}`));
 
     try {
-      await salvarStatusTentativa(2, logs);
+      await salvarStatusTentativa(
+        {
+          numeroTentativa: 1,
+          concluido: false,
+        },
+        logs,
+      );
 
-      const configTamplate = configMarca.tamplates.segundoContato;
+      const configtemplate = configMarca.templates.segundoContato;
 
-      const resultadoEnvioTamplate = await enviarTamplate.executar(
+      const resultadoEnviotemplate = await enviartemplate.executar(
         configMarca.pasta,
-        configTamplate,
+        configtemplate,
         undefined,
         undefined,
         undefined,
         logs,
       );
 
-      const { mensagem } = resultadoEnvioTamplate;
-      const { tipo, assunto } = configTamplate.registroTarefa;
+      const { mensagem } = resultadoEnviotemplate;
+      const { tipo, assunto } = configtemplate.registroTarefa;
 
       await registrarTarefa(mensagem, tipo, assunto, logs);
 

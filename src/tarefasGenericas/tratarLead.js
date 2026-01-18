@@ -14,8 +14,7 @@ export const tratarLead = {
   nome: 'tratar Lead',
 
   async executar(configMarca, logs = []) {
-    console.log(configMarca);
-    const { marca, categoria } = configMarca;
+    const { marca, categoria, classificacao = 'Cold' } = configMarca;
     logs.push(log('info', '📋 Tratando lead...'));
 
     try {
@@ -26,6 +25,8 @@ export const tratarLead = {
       const nomeFormatado = primeiroNome ? primeiroNome : sobrenome;
 
       const numeroTelefone = await preencherNumeroTelefone(logs);
+
+      await preencherClassificacao(classificacao, logs);
 
       await preencherInputsInteresses(marca, categoria, logs);
 
@@ -43,6 +44,7 @@ export const tratarLead = {
           sobrenome,
           numeroTelefone,
           modelo,
+          classificacao,
         },
       };
     } catch (erro) {
@@ -145,6 +147,27 @@ export const preencherNumeroTelefone = async function (logs) {
     return numeroTelefone;
   } catch (erro) {
     logs.push(log('erro', `Erro ao formatar telefone: ${erro.message}`));
+    throw erro;
+  }
+};
+
+export const preencherClassificacao = async function (classificacao, logs) {
+  logs.push(log('info', `Definindo classificação como ${classificacao}...`));
+
+  try {
+    await selecionarOpcaoCombobox(
+      seletores.salesforce.comboboxes.classificacao,
+      seletores.salesforce.opcoes.padrao,
+      classificacao,
+      logs,
+      'Classificação',
+    );
+    await esperar(300);
+
+    logs.push(log('sucesso', `Classificação definida: ${classificacao}`));
+    return true;
+  } catch (erro) {
+    logs.push(log('erro', `Erro ao definir classificação: ${erro.message}`));
     throw erro;
   }
 };

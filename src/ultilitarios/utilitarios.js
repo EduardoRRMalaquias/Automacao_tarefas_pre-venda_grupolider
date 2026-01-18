@@ -69,7 +69,6 @@ export const esperarElemento = async (seletor, tempo = 10000) => {
 };
 
 export const ativarEventosElementos = (elemento) => {
-  console.log('ativando eventos elementos');
   elemento.dispatchEvent(new Event('click', { bubbles: true }));
   elemento.dispatchEvent(new Event('input', { bubbles: true }));
   elemento.dispatchEvent(new Event('change', { bubbles: true }));
@@ -90,44 +89,112 @@ export const formatarNumeroTelefone = (numeroTelefone) => {
 };
 
 //Salvar Satatus Tentativa
-export const salvarStatusTentativa = async (tentiva = null, logs) => {
-  logs.push(log('info', 'Salvando Status de Tentativa...'));
+export const salvarStatusTentativa = async (config, logs) => {
+  const { numeroTentativa, concluido, tipoContato = null } = config;
 
-  const botaoAbrirModalTentativa = document.querySelector(
-    seletores.salesforce.botoes.salvarTentativa,
-  );
-  const textoBotao = botaoAbrirModalTentativa.textContent;
+  logs.push(log('info', `Salvando status da ${numeroTentativa}ª tentativa...`));
 
-  let status;
-  if (tentiva) {
-    if (textoBotao !== `Salvar Status ${tentiva - 1}° Tentativa`) {
-      return;
+  try {
+    if (!numeroTentativa || numeroTentativa < 1 || numeroTentativa > 3) {
+      throw new Error('Número de tentativa inválido (1, 2 ou 3)');
     }
-    status = 'Não Concluído';
-  } else {
-    status = 'Concluído';
+
+    if (concluido && !tipoContato) {
+      throw new Error('Tipo de contato obrigatório quando concluído');
+    }
+
+    const botaoAbrirModal = await esperarElemento(
+      seletores.salesforce.botoes.abrirModalTentativa,
+      5000,
+    );
+
+    if (!botaoAbrirModal) {
+      throw new Error('Botão de salvar tentativa não encontrado');
+    }
+
+    const textoBotao = botaoAbrirModal.textContent.trim();
+    const tentativaAtualMatch = textoBotao.match(/(\d).*Tentativa/);
+
+    if (tentativaAtualMatch) {
+      const tentativaAtual = parseInt(tentativaAtualMatch[1]);
+
+      if (tentativaAtual !== numeroTentativa) {
+        if (tentativaAtual > numeroTentativa) {
+          logs.push(log('info', `${numeroTentativa}ª tentativa já registrada`));
+          return { sucesso: true, jaRegistrada: true };
+        }
+      }
+    }
+
+    await clicarElemento(botaoAbrirModal);
+    await esperar(800);
+    logs.push(log('info', 'Modal de tentativa aberto'));
+
+    const status = concluido ? 'Concluído' : 'Não Concluído';
+
+    await selecionarOpcaoCombobox(
+      seletores.salesforce.comboboxes.status,
+      seletores.salesforce.opcoes.padrao,
+      status,
+      logs,
+      'Status',
+    );
+    await esperar(300);
+
+    if (concluido && tipoContato) {
+      const tipoTexto = tipoContato === 'whatsapp' ? 'WhatsApp' : 'Ligação';
+
+      await selecionarOpcaoCombobox(
+        seletores.salesforce.comboboxes.tipoContato,
+        seletores.salesforce.opcoes.padrao,
+        tipoTexto,
+        logs,
+        'Tipo de tentativa',
+      );
+      await esperar(1000);
+    }
+
+    const botaoSalvar = document.querySelector(
+      seletores.salesforce.botoes.salvarTentativa,
+    );
+
+    if (!botaoSalvar) {
+      // Fallback: tenta encontrar botão "Salvar" dentro do modal
+      const modal = document.querySelector('[role="dialog"]');
+      if (modal) {
+        const botoesDentroModal = modal.querySelectorAll(
+          'button[title*="Salvar"]',
+        );
+        const botaoCorreto = Array.from(botoesDentroModal).find(
+          (btn) => !btn.textContent.includes('Cancelar'),
+        );
+
+        if (botaoCorreto) {
+          await clicarElemento(botaoCorreto);
+        } else {
+          throw new Error('Botão salvar não encontrado no modal');
+        }
+      } else {
+        throw new Error('Modal não encontrado');
+      }
+    } else {
+      await clicarElemento(botaoSalvar);
+    }
+
+    await esperar(1000);
+
+    logs.push(log('sucesso', `${numeroTentativa}ª tentativa: ${status}`));
+
+    return {
+      sucesso: true,
+      numeroTentativa,
+      status,
+      tipoContato: concluido ? tipoContato : null,
+    };
+  } catch (erro) {
+    logs.push(log('erro', `Erro ao salvar tentativa: ${erro.message}`));
+    throw erro;
   }
-
-  await clicarElemento(botaoAbrirModalTentativa);
-  await esperar(800);
-
-  await selecionarOpcaoCombobox(
-    seletores.salesforce.comboboxes.status,
-    seletores.salesforce.opcoes.padrao,
-    status,
-    logs,
-    'Status',
-  );
-  await esperar(200);
-
-  const botaoSalvarTentativa = document.querySelectorAll(
-    seletores.salesforce.botoes.salvarTentativa,
-  )[2];
-
-  await clicarElemento(botaoSalvarTentativa);
-  await esperar(200);
-
-  logs.push(log('info', 'Status de Tentativa salvo com sucesso'));
 };
 
 // funçoes de Manipulação da pagina
@@ -190,7 +257,6 @@ export const selecionarOpcaoCombobox = async function (
 
     const opcoes = Array.from(document.querySelectorAll(seletorOpcoes));
 
-    console.log(opcaoTexto);
     const opcao = opcoes.find((opcao) => {
       const texto = (opcao.textContent || '').trim().toUpperCase();
       return texto === opcaoTexto.toUpperCase();
@@ -212,7 +278,7 @@ export const selecionarOpcaoCombobox = async function (
   }
 };
 
-export const enviarTamplateWhatsapp = async function (
+export const enviartemplateWhatsapp = async function (
   primeiroNome,
   modelo,
   operador,
@@ -221,33 +287,33 @@ export const enviarTamplateWhatsapp = async function (
   logs.push(log('info', 'Enviando template WhatsApp...'));
 
   try {
-    //Botão "Enviar Tamplate"
+    //Botão "Enviar template"
     try {
       logs.push(log('info', 'Tentando botão central...'));
-      const botaoEnviarTamplate = await esperarElemento(
-        seletores.beetalk.botoes.enviarTamplate,
+      const botaoEnviartemplate = await esperarElemento(
+        seletores.beetalk.botoes.enviartemplate,
         3000,
       );
-      await clicarElemento(botaoEnviarTamplate, 800);
+      await clicarElemento(botaoEnviartemplate, 800);
       logs.push(log('sucesso', 'Botão central clicado'));
-      tamplatesAberto = true;
+      templatesAberto = true;
     } catch (erroTentativa1) {
       logs.push(
         log('info', 'Botão central não encontrado, tentando alternativa...'),
       );
     }
 
-    //botao tamplate rapido
-    if (!tamplatesAberto) {
+    //botao template rapido
+    if (!templatesAberto) {
       try {
         logs.push(log('info', 'Tentando quick-messages...'));
         const tampleteRapido = await esperarElemento(
-          seletores.beetalk.botoes.tamplateRapido,
+          seletores.beetalk.botoes.templateRapido,
           3000,
         );
         console.log(tampleteRapido);
         ativarEventosElementos(tampleteRapido);
-        tamplatesAberto = true;
+        templatesAberto = true;
       } catch (erroTentativa2) {
         throw new Error(
           'Nenhum botão de template encontrado (center-button ou quick-messages)',
@@ -255,21 +321,21 @@ export const enviarTamplateWhatsapp = async function (
       }
     }
 
-    //pasta de tamplates
+    //pasta de templates
     await esperar(500);
-    const pastaTamplate = await esperarElemento(
-      seletores.beetalk.pastaTamplate('GW LIDER TEMPLATE'),
+    const pastatemplate = await esperarElemento(
+      seletores.beetalk.pastatemplate('GW LIDER TEMPLATE'),
       5000,
     );
-    await clicarElemento(pastaTamplate, 800);
+    await clicarElemento(pastatemplate, 800);
     logs.push(log('sucesso', 'Pasta GW LIDER TEMPLATE aberta'));
 
     await esperar(500);
-    const botaoTamplate = await esperarElemento(
-      seletores.beetalk.botaoTamplate('a0EU6000003BVunMAG'),
+    const botaotemplate = await esperarElemento(
+      seletores.beetalk.botaotemplate('a0EU6000003BVunMAG'),
       5000,
     );
-    await clicarElemento(botaoTamplate, 1000);
+    await clicarElemento(botaotemplate, 1000);
     logs.push(log('sucesso', 'Template SAUDACAO GW 2 selecionado'));
 
     await esperar(800);
@@ -300,7 +366,7 @@ export const enviarTamplateWhatsapp = async function (
     logs.push(log('sucesso', 'Template enviado'));
     await esperar(5000);
   } catch (erro) {
-    logs.push(log('erro', `Erro ao enviar tamplate: ${erro.message} `));
+    logs.push(log('erro', `Erro ao enviar template: ${erro.message} `));
     throw erro;
   }
 };
@@ -329,14 +395,22 @@ export const registrarTarefa = async function (mensagem, tipo, assunto, logs) {
     await esperar(500);
 
     // Campo assunto
-    await selecionarOpcaoCombobox(
-      seletores.salesforce.comboboxes.assunto,
-      seletores.salesforce.opcoes.padrao,
-      assunto,
-      logs,
-      'Assunto',
-    );
-    await esperar(500);
+    try {
+      await selecionarOpcaoCombobox(
+        seletores.salesforce.comboboxes.assunto,
+        seletores.salesforce.opcoes.padrao,
+        assunto,
+        logs,
+        'Assunto',
+      );
+      await esperar(500);
+    } catch (error) {
+      const campoAssunto = await esperarElemento(
+        seletores.salesforce.comboboxes.assunto,
+      );
+      campoAssunto.value = assunto;
+      ativarEventosElementos(campoAssunto);
+    }
 
     // Campo Data de Vencimento
     const InputData = await esperarElemento(

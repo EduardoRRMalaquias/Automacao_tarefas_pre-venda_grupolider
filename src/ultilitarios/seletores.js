@@ -7,7 +7,10 @@ export const seletores = {
       salvarEdicao: 'lightning-button button[name="SaveEdit"]',
       novaTarefa: 'button[aria-label="Nova tarefa"]',
       salvarTarefa: 'button.cuf-publisherShareButton',
-      salvarTentativa: 'lightning-button[variant="brand"] button',
+      abrirModalTentativa:
+        'button[title*="Salvar Status"][title*="Tentativa"]:not([style*="margin"])',
+      salvarTentativa:
+        'footer button[title*="Salvar Status"][title*="Tentativa"]:not([style*="margin"])',
     },
 
     // Inputs de Lead
@@ -21,12 +24,14 @@ export const seletores = {
 
     // Comboboxes
     comboboxes: {
+      classificacao: 'button[role="combobox"][aria-label="Classificação"]',
       marca: 'button[role="combobox"][aria-label="Marca"]',
       categoria: 'button[role="combobox"][aria-label="Categoria"]',
       interesse: 'button[role="combobox"][aria-label="Interesse em"]',
       tipoTarefa: 'a[role="combobox"][aria-labelledby*="label"]',
       assunto: 'lightning-grouped-combobox [role="combobox"]',
       status: 'button[role="combobox"][aria-label="Status"]',
+      tipoContato: 'button[role="combobox"][aria-label="Tipo de tentativa"]',
     },
 
     // Opções de combobox
@@ -48,14 +53,14 @@ export const seletores = {
   // ========== BEETALK (WhatsApp) ==========
   beetalk: {
     botoes: {
-      enviarTamplate: 'p.center-button',
-      tamplateRapido: 'use[data-name="quick-messages"]',
+      enviartemplate: 'p.center-button',
+      templateRapido: 'use[data-name="quick-messages"]',
       enviar: 'button:has-text("Enviar")', // Precisa ajustar
     },
 
     //Templates
-    pastaTamplate: (idPasta) => `p[data-folder-name="${idPasta}"]`,
-    botaoTamplate: (idTemplate) => `p[data-message-id="${idTemplate}"]`,
+    pastatemplate: (idPasta) => `p[data-folder-name="${idPasta}"]`,
+    botaotemplate: (idTemplate) => `p[data-message-id="${idTemplate}"]`,
 
     // Campos do template
     campo: (fieldId) => `input[data-id="${fieldId}"]`,

@@ -155,7 +155,7 @@ function Popup() {
                 <option value="primeiro-contato">Primeiro Contato</option>
                 <option value="segundo-contato">Segundo Contato</option>
                 <option value="cadastrar-leads">cadastrar Leads</option>
-                <option value="encaminhar-leads">Encaminhar Leads</option>
+                <option value="encaminhar-lead">Encaminhar Lead</option>
                 <option value="ligacoes">Ligações</option>
               </select>
             </article>

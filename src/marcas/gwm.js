@@ -2,6 +2,7 @@ import { gerenciadorMarcas } from './gerenciadorMarcas';
 import { tratarLead } from '../tarefasGenericas/tratarLead';
 import { primeiroContato } from '../tarefasDiarias/primeiroContato';
 import { segundoContato } from '../tarefasDiarias/segundoContato';
+import { encaminharLead } from '../tarefasDiarias/encaminharLead';
 
 const configuracaoGWM = {
   marca: 'GWM',
@@ -9,10 +10,10 @@ const configuracaoGWM = {
 
   pasta: 'GW LIDER TEMPLATE',
 
-  tamplates: {
+  templates: {
     primeiroContatoModelo: {
-      nomeTamplate: 'SAUDACAO GW 2',
-      idTamplate: 'a0EU6000003BVunMAG',
+      nometemplate: 'SAUDACAO GW 2',
+      idtemplate: 'a0EU6000003BVunMAG',
       campos: [
         { id: 1, valor: 'nome' },
         { id: 2, valor: 'operador' },
@@ -25,8 +26,8 @@ const configuracaoGWM = {
     },
 
     primeiroContatoSemModelo: {
-      nomeTamplate: 'PRIMEIRO CONTATO GW 2',
-      idTamplate: 'a0EU6000003BVy1MAG',
+      nometemplate: 'PRIMEIRO CONTATO GW 2',
+      idtemplate: 'a0EU6000003BVy1MAG',
       campos: [
         { id: 1, valor: 'nome' },
         { id: 2, valor: 'saudacao' },
@@ -39,12 +40,21 @@ const configuracaoGWM = {
     },
 
     segundoContato: {
-      nomeTamplate: 'SEGUNDA TENTAT',
-      idTamplate: 'a0EU6000002sFwzMAE',
+      nometemplate: 'SEGUNDA TENTAT',
+      idtemplate: 'a0EU6000002sFwzMAE',
       registroTarefa: {
         tipo: 'Contato',
         assunto: 'Enviado Nova Mensagem',
       },
+    },
+  },
+
+  encaminhamento: {
+    direto:
+      'Oportunidade de OLX/Webmotors/DigitalDrive encaminhada direto conforme autorizado por Melissa. Favor dar seguimento.',
+    portal: {
+      mensagem: 'Cliente identificado no GDMC',
+      assuntoPadrao: 'PORTAL GDMC',
     },
   },
 };
@@ -76,6 +86,18 @@ gerenciadorMarcas.cadastrarMarca('gwm', {
           ...contexto,
           configMarca: configuracaoGWM,
         }),
+    },
+
+    'encaminhar-lead': {
+      ...encaminharLead,
+      executar: (contexto) =>
+        encaminharLead.executar(
+          {
+            ...contexto,
+            configMarca: configuracaoGWM,
+          },
+          'contato',
+        ),
     },
   },
 });

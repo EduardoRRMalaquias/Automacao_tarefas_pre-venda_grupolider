@@ -1,5 +1,5 @@
 import { tratarLead } from '../tarefasGenericas/tratarLead.js';
-import { enviarTamplate } from '../tarefasGenericas/enviarTemplate.js';
+import { enviartemplate } from '../tarefasGenericas/enviarTemplate.js';
 import {
   getOperador,
   log,
@@ -23,28 +23,28 @@ export const primeiroContato = {
       );
       const { nomeFormatado, modelo } = resultadoTratamentoLeads.dadosLeads;
 
-      //Resolver configuração tamplate
+      //Resolver configuração template
       const { primeiroContatoModelo, primeiroContatoSemModelo } =
-        configMarca.tamplates;
+        configMarca.templates;
 
-      let configTamplate;
+      let configtemplate;
       if (modelo) {
-        configTamplate = primeiroContatoModelo;
+        configtemplate = primeiroContatoModelo;
       } else {
-        configTamplate = primeiroContatoSemModelo;
+        configtemplate = primeiroContatoSemModelo;
       }
 
-      const resultadoEnvioTamplate = await enviarTamplate.executar(
+      const resultadoEnviotemplate = await enviartemplate.executar(
         configMarca.pasta,
-        configTamplate,
+        configtemplate,
         nomeFormatado,
         modelo,
         operador,
         logs,
       );
 
-      const { mensagem } = resultadoEnvioTamplate;
-      const { tipo, assunto } = configTamplate.registroTarefa;
+      const { mensagem } = resultadoEnviotemplate;
+      const { tipo, assunto } = configtemplate.registroTarefa;
 
       await registrarTarefa(mensagem, tipo, assunto, logs);
 

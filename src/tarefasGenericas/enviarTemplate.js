@@ -7,12 +7,12 @@ import {
   ativarEventosElementos,
 } from '../ultilitarios/utilitarios.js';
 
-export const enviarTamplate = {
-  nome: 'Enviar Tamplate Whatsapp',
+export const enviartemplate = {
+  nome: 'Enviar template Whatsapp',
 
   async executar(
     pasta,
-    { nomeTamplate, idTamplate, campos },
+    { nometemplate, idtemplate, campos },
     nomeFormatado = '',
     modelo = '',
     operador = '',
@@ -21,14 +21,14 @@ export const enviarTamplate = {
     logs.push(log('info', 'Enviando template WhatsApp...'));
 
     try {
-      await abrirModalTamplate(logs);
+      await abrirModaltemplate(logs);
 
-      await selecionarPastaTamplate(pasta, logs);
+      await selecionarPastatemplate(pasta, logs);
 
-      await selecionarTamplate(nomeTamplate, idTamplate, logs);
+      await selecionartemplate(nometemplate, idtemplate, logs);
 
       if (campos && campos > 0) {
-        await preencherCamposTamplate(
+        await preencherCampostemplate(
           campos,
           nomeFormatado,
           modelo,
@@ -37,15 +37,12 @@ export const enviarTamplate = {
         );
       }
 
-      await enviarMensagemTamplate(logs);
+      await enviarMensagemtemplate(logs);
 
-      const { mensagem } = await capturarMensagem(logs);
+      const { mensagem } = await capturarMensagems(logs);
 
       logs.push(
-        log(
-          'sucesso',
-          'Template de menssagem enviado e capturado com sucesso!',
-        ),
+        log('sucesso', 'Template de mensagem enviado e capturado com sucesso!'),
       );
 
       return {
@@ -53,42 +50,42 @@ export const enviarTamplate = {
         mensagem,
       };
     } catch (erro) {
-      logs.push(log('erro', `Erro ao enviar tamplate: ${erro.message} `));
+      logs.push(log('erro', `Erro ao enviar template: ${erro.message} `));
       throw erro;
     }
   },
 };
 
-const abrirModalTamplate = async (logs) => {
-  let tamplatesAberto = false;
+const abrirModaltemplate = async (logs) => {
+  let templatesAberto = false;
 
-  //Botão "Enviar Tamplate"
+  //Botão "Enviar template"
   try {
     logs.push(log('info', 'Tentando botão central...'));
-    const botaoEnviarTamplate = await esperarElemento(
-      seletores.beetalk.botoes.enviarTamplate,
+    const botaoEnviartemplate = await esperarElemento(
+      seletores.beetalk.botoes.enviartemplate,
       3000,
     );
-    await clicarElemento(botaoEnviarTamplate, 800);
+    await clicarElemento(botaoEnviartemplate, 800);
     logs.push(log('sucesso', 'Botão central clicado'));
-    tamplatesAberto = true;
+    templatesAberto = true;
   } catch (erroTentativa1) {
     logs.push(
       log('info', 'Botão central não encontrado, tentando alternativa...'),
     );
   }
 
-  //botao tamplate rapido
-  if (!tamplatesAberto) {
+  //botao template rapido
+  if (!templatesAberto) {
     try {
       logs.push(log('info', 'Tentando quick-messages...'));
       const tampleteRapido = await esperarElemento(
-        seletores.beetalk.botoes.tamplateRapido,
+        seletores.beetalk.botoes.templateRapido,
         3000,
       );
       console.log(tampleteRapido);
       ativarEventosElementos(tampleteRapido);
-      tamplatesAberto = true;
+      templatesAberto = true;
     } catch (erroTentativa2) {
       throw new Error(
         'Nenhum botão de template encontrado (center-button ou quick-messages)',
@@ -97,34 +94,34 @@ const abrirModalTamplate = async (logs) => {
   }
 };
 
-const selecionarPastaTamplate = async (nomePasta, logs) => {
+const selecionarPastatemplate = async (nomePasta, logs) => {
   await esperar(500);
-  const pastaTamplate = await esperarElemento(
-    seletores.beetalk.pastaTamplate('GW LIDER TEMPLATE'),
+  const pastatemplate = await esperarElemento(
+    seletores.beetalk.pastatemplate('GW LIDER TEMPLATE'),
     5000,
   );
-  await clicarElemento(pastaTamplate, 800);
+  await clicarElemento(pastatemplate, 800);
   logs.push(log('sucesso', `Pasta "${nomePasta}" aberta`));
 };
 
-const selecionarTamplate = async (nomeTamplate, idTamplate, logs) => {
+const selecionartemplate = async (nometemplate, idtemplate, logs) => {
   await esperar(500);
-  const botaoTamplate = await esperarElemento(
-    seletores.beetalk.botaoTamplate(idTamplate),
+  const botaotemplate = await esperarElemento(
+    seletores.beetalk.botaotemplate(idtemplate),
     5000,
   );
-  await clicarElemento(botaoTamplate, 1000);
-  logs.push(log('sucesso', `Template ${nomeTamplate} selecionado`));
+  await clicarElemento(botaotemplate, 1000);
+  logs.push(log('sucesso', `Template ${nometemplate} selecionado`));
 };
 
-const preencherCamposTamplate = async (
+const preencherCampostemplate = async (
   campos,
   nome,
   modelo,
   operador,
   logs,
 ) => {
-  logs.push(log('info', `Preenchendo ${campos.length} campos do tamplate`));
+  logs.push(log('info', `Preenchendo ${campos.length} campos do template`));
 
   for (const campo of campos) {
     await esperar(200);
@@ -158,7 +155,7 @@ const preencherCamposTamplate = async (
   }
 };
 
-const enviarMensagemTamplate = async (logs) => {
+const enviarMensagemtemplate = async (logs) => {
   const botaoEnviar = Array.from(document.querySelectorAll('button')).find(
     (botao) => {
       return botao.textContent.includes('Enviar');
@@ -174,17 +171,39 @@ const enviarMensagemTamplate = async (logs) => {
   await esperar(5000);
 };
 
-const capturarMensagem = async (logs) => {
-  const mensagems = document.querySelectorAll(seletores.beetalk.mensagems);
+export const capturarMensagems = async (logs = []) => {
+  logs.push(log('info', 'Capturando mensagens enviadas...'));
 
-  const ultimaMensagem = mensagems[mensagems.length - 1];
+  try {
+    await esperar(2000);
 
-  if (!ultimaMensagem) {
-    throw new Error('Não foi possível encontrar nenhuma mensagem enviada');
+    const elementosMensagems = document.querySelectorAll(
+      seletores.beetalk.mensagems,
+    );
+
+    if (!elementosMensagems || elementosMensagems.length === 0) {
+      throw new Error('Nenhuma mensagem encontrada');
+    }
+
+    const mensagens = Array.from(elementosMensagems).map((elemento, index) => ({
+      numero: index + 1,
+      texto: elemento.textContent.trim(),
+    }));
+
+    const ultimaMensagem = mensagens[mensagens.length - 1];
+
+    logs.push(log('sucesso', `${mensagens.length} mensagem(ns) capturada(s)`));
+    logs.push(
+      log('info', `Última: "${ultimaMensagem.texto.substring(0, 50)}..."`),
+    );
+
+    return {
+      mensagem: ultimaMensagem.texto, // ✅ String da última
+      mensagens: mensagens, // ✅ Array completo
+      totalMensagens: mensagens.length,
+    };
+  } catch (erro) {
+    logs.push(log('erro', `Erro ao capturar mensagens: ${erro.message}`));
+    throw erro;
   }
-
-  const mensagem = ultimaMensagem.textContent.trim();
-  logs.push(log('sucesso', 'Mensagem capturada'));
-
-  return { mensagem, mensagems };
 };

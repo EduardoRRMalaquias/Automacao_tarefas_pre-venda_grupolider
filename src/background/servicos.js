@@ -101,13 +101,35 @@ export async function processarAba(idAba, marca, tarefa) {
 
       esperar(2000);
 
-      //fechar aba
-      try {
-        await chrome.tabs.remove(idAba);
-        console.log(`🗑️ Aba ${idAba} fechada`);
-        enviarLogPopup('info', `Aba ${idAba} fechada`);
-      } catch (erro) {
-        console.log(`⚠️ Não foi possível fechar aba ${idAba}`);
+      if (tarefa === 'encaminhar-lead') {
+        try {
+          const abas = await chrome.tabs.query({ currentWindow: true });
+
+          const indiceAtual = abas.findIndex((aba) => aba.id === idAba);
+
+          if (indiceAtual !== -1 && abas.length > 1) {
+            const proximoIndice = (indiceAtual + 1) % abas.length;
+            const proximaAba = abas[proximoIndice];
+
+            await chrome.tabs.update(proximaAba.id, { active: true });
+
+            console.log(`➡️ Mudou da aba ${idAba} para a aba ${proximaAba.id}`);
+            enviarLogPopup('info', `Avançou para a próxima aba`);
+          } else {
+            console.log('⚠️ Apenas uma aba aberta ou aba não encontrada.');
+          }
+        } catch (erro) {
+          console.log(`⚠️ Erro ao tentar mudar de aba:`, erro);
+        }
+      } else {
+        //fechar aba
+        try {
+          await chrome.tabs.remove(idAba);
+          console.log(`🗑️ Aba ${idAba} fechada`);
+          enviarLogPopup('info', `Aba ${idAba} fechada`);
+        } catch (erro) {
+          console.log(`⚠️ Não foi possível fechar aba ${idAba}`);
+        }
       }
 
       return {
