@@ -11,7 +11,7 @@ import {
 export const encaminharLead = {
   nome: 'Encaminhar Lead',
 
-  async executar({ configMarca, tipoEncaminhamento }) {
+  async executar({ configMarca }, tipoEncaminhamento) {
     const logs = [];
 
     logs.push(

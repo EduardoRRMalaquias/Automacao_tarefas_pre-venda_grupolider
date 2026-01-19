@@ -72,12 +72,7 @@ async function garantirCarregamentoScripts(idAba) {
   }
 }
 
-export async function processarAba(
-  idAba,
-  marca,
-  tarefa,
-  tipoEncaminhamento = null,
-) {
+export async function processarAba(idAba, marca, tarefa) {
   console.log(`\n=== PROCESSANDO ABA ${idAba} ===`);
 
   try {
@@ -92,7 +87,6 @@ export async function processarAba(
       acao: 'rodar-automacao',
       marca,
       tarefa,
-      tipoEncaminhamento,
     });
 
     if (resposta && resposta.sucesso) {
@@ -168,11 +162,7 @@ export async function processarAba(
   }
 }
 
-export async function processarTodasAbas(
-  marca,
-  tarefa,
-  tipoEncaminhamento = null,
-) {
+export async function processarTodasAbas(marca, tarefa) {
   console.log('\n========================================');
   console.log('🚀 INICIANDO PROCESSAMENTO EM LOTE');
   console.log('========================================\n');
@@ -210,12 +200,7 @@ export async function processarTodasAbas(
     enviarLogPopup('info', `[${i + 1}/${abas.length}] ${aba.title}`);
 
     //processa aba
-    const resultado = await processarAba(
-      aba.id,
-      marca,
-      tarefa,
-      tipoEncaminhamento,
-    );
+    const resultado = await processarAba(aba.id, marca, tarefa);
     resultados.push(resultado);
 
     if (resultado.sucesso) {

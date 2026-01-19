@@ -64,7 +64,7 @@ import { isPaginaLead } from './ultilitarios/utilitarios.js';
 
   //Processar automação
   async function rodarAutomacao(requisicao) {
-    const { marca, tarefa, tipoEncaminhamento } = requisicao;
+    const { marca, tarefa } = requisicao;
 
     //Validações
     if (!isPaginaLead()) {
@@ -131,16 +131,13 @@ import { isPaginaLead } from './ultilitarios/utilitarios.js';
     console.log(`🎯 Executando tarefa ${tarefa} da marca ${marca}`);
 
     try {
-      const contexto = {
-        url: window.location.href,
-        dataHora: new Date().toLocaleString('pt-BR'),
-        tipoEncaminhamento, // ✅ Adiciona ao contexto
-      };
-
       const resposta = await window.gerenciadorMarcas.executarTarefa(
         marca,
         tarefa,
-        contexto,
+        {
+          url: window.location.href,
+          dataHora: new Date().toLocaleDateString('pt-BR'),
+        },
       );
 
       return {
