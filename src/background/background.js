@@ -15,7 +15,12 @@ chrome.runtime.onMessage.addListener(
     if (requisicao.acao === 'rodar-unica-aba') {
       console.log(`Comando: Processar unica aba ${requisicao.idAba} `);
 
-      processarAba(requisicao.idAba, requisicao.marca, requisicao.tarefa)
+      processarAba(
+        requisicao.idAba,
+        requisicao.marca,
+        requisicao.tarefa,
+        requisicao.tipoEncaminhamento,
+      )
         .then((resposta) => {
           console.log(`✅ Aba ${requisicao.idAba} processada:`, resposta);
           enviarResposta(resposta);
@@ -35,7 +40,11 @@ chrome.runtime.onMessage.addListener(
     if (requisicao.acao === 'rodar-todas-abas') {
       console.log(`Comando: Processar TODAS as abas`);
 
-      processarTodasAbas(requisicao.marca, requisicao.tarefa)
+      processarTodasAbas(
+        requisicao.marca,
+        requisicao.tarefa,
+        requisicao.tipoEncaminhamento,
+      )
         .then((resultado) => {
           console.log('✅ Todas as abas processadas:', resultado);
           enviarResposta({

@@ -90,14 +90,21 @@ gerenciadorMarcas.cadastrarMarca('gwm', {
 
     'encaminhar-lead': {
       ...encaminharLead,
-      executar: (contexto) =>
-        encaminharLead.executar(
+      executar: (contexto) => {
+         const { tipoEncaminhamento } = contexto;
+        
+        console.log(`Encaminhando lead - Tipo: ${tipoEncaminhamento}`);
+
+        return encaminharLead.executar(
           {
             ...contexto,
             configMarca: configuracaoGWM,
+            tipoEncaminhamento
           },
           'portal',
         ),
+      }
+        
     },
   },
 });
