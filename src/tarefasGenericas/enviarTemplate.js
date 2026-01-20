@@ -27,7 +27,7 @@ export const enviartemplate = {
 
       await selecionartemplate(nometemplate, idtemplate, logs);
 
-      if (campos && campos > 0) {
+      if (campos && campos.length > 0) {
         await preencherCampostemplate(
           campos,
           nomeFormatado,
@@ -182,7 +182,12 @@ export const capturarMensagems = async (logs = []) => {
     );
 
     if (!elementosMensagems || elementosMensagems.length === 0) {
-      throw new Error('Nenhuma mensagem encontrada');
+      console.error('Nenhuma mensagem encontrada');
+      return {
+        mensagem: '', // ✅ String da última
+        mensagens: [], // ✅ Array completo
+        totalMensagens: 0,
+      };
     }
 
     const mensagens = Array.from(elementosMensagems).map((elemento, index) => ({

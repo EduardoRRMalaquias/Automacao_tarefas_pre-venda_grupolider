@@ -105,7 +105,6 @@ function determinarTentativaEncaminhamento(tipoEncaminhamento) {
 
 async function montarTextoPadraotarefa(configMarca, tipoEncaminhamento) {
   const { mensagens } = await capturarMensagems();
-  console.log(mensagens);
 
   if (tipoEncaminhamento === 'contato' && mensagens.length > 0) {
     let menssagemTextoPadrao = '';

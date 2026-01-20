@@ -169,8 +169,8 @@ function Popup() {
                     {status.tipo === 'sucesso'
                       ? '✅'
                       : status.tipo === 'erro'
-                      ? '❌'
-                      : '⏳'}
+                        ? '❌'
+                        : '⏳'}
                   </span>
                   <span className="texto-status">{status.mensagem}</span>
                 </div>

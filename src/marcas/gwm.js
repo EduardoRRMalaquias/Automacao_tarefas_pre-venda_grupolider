@@ -96,7 +96,7 @@ gerenciadorMarcas.cadastrarMarca('gwm', {
             ...contexto,
             configMarca: configuracaoGWM,
           },
-          'contato',
+          'portal',
         ),
     },
   },
