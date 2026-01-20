@@ -92,8 +92,6 @@ gerenciadorMarcas.cadastrarMarca('gwm', {
       ...encaminharLead,
       executar: (contexto) =>
         encaminharLead.executar(
-      executar: (contexto) =>
-        encaminharLead.executar(
           {
             ...contexto,
             configMarca: configuracaoGWM,
