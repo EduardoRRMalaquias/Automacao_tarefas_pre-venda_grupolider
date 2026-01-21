@@ -88,6 +88,51 @@ export const formatarNumeroTelefone = (numeroTelefone) => {
     .trim();
 };
 
+// funçoes de Manipulação da pagina
+export const ativarModoEdicao = async function (logs) {
+  logs.push(log('info', 'Ativando modo de edição...'));
+
+  try {
+    const botaoEdicao = await esperarElemento(
+      seletores.salesforce.botoes.editar,
+      5000,
+    );
+    await clicarElemento(botaoEdicao);
+    logs.push(log('sucesso', 'Modo de edicao ativado'));
+    await esperar(1000);
+    return true;
+  } catch {}
+};
+
+export const salvarDesativarModoEdicao = async function (logs) {
+  logs.push(log('info', 'Salvando alterações e desativando modo de edição'));
+
+  try {
+    const botaoSalvarEdicao = await esperarElemento(
+      seletores.salesforce.botoes.salvarEdicao,
+      5000,
+    );
+
+    if (!botaoSalvarEdicao) {
+      throw new Error('Botão de salvar edicao não encontrado');
+    }
+
+    await clicarElemento(botaoSalvarEdicao);
+    logs.push(log('sucesso', 'Altyerações salvas e modo de edicao desativado'));
+
+    await esperar(1000);
+    return true;
+  } catch (erro) {
+    logs.push(
+      log(
+        'erro',
+        `Falha ao salvar alterações ou desativar edição: ${erro.message}`,
+      ),
+    );
+    return false;
+  }
+};
+
 //Salvar Satatus Tentativa
 export const salvarStatusTentativa = async (config, logs) => {
   const { numeroTentativa, concluido, tipoContato = null } = config;
@@ -115,14 +160,12 @@ export const salvarStatusTentativa = async (config, logs) => {
     const textoBotao = botaoAbrirModal.textContent.trim();
     const tentativaAtualMatch = textoBotao.match(/(\d).*Tentativa/);
 
-    if (tentativaAtualMatch) {
+    if (!concluido && tentativaAtualMatch) {
       const tentativaAtual = parseInt(tentativaAtualMatch[1]);
 
-      if (tentativaAtual !== numeroTentativa) {
-        if (tentativaAtual > numeroTentativa) {
-          logs.push(log('info', `${numeroTentativa}ª tentativa já registrada`));
-          return { sucesso: true, jaRegistrada: true };
-        }
+      if (tentativaAtual > numeroTentativa) {
+        logs.push(log('info', `${numeroTentativa}ª tentativa já registrada`));
+        return { sucesso: true, jaRegistrada: true };
       }
     }
 
@@ -194,51 +237,6 @@ export const salvarStatusTentativa = async (config, logs) => {
   } catch (erro) {
     logs.push(log('erro', `Erro ao salvar tentativa: ${erro.message}`));
     throw erro;
-  }
-};
-
-// funçoes de Manipulação da pagina
-export const ativarModoEdicao = async function (logs) {
-  logs.push(log('info', 'Ativando modo de edição...'));
-
-  try {
-    const botaoEdicao = await esperarElemento(
-      seletores.salesforce.botoes.editar,
-      5000,
-    );
-    await clicarElemento(botaoEdicao);
-    logs.push(log('sucesso', 'Modo de edicao ativado'));
-    await esperar(1000);
-    return true;
-  } catch {}
-};
-
-export const salvarDesativarModoEdicao = async function (logs) {
-  logs.push(log('info', 'Salvando alterações e desativando modo de edição'));
-
-  try {
-    const botaoSalvarEdicao = await esperarElemento(
-      seletores.salesforce.botoes.salvarEdicao,
-      5000,
-    );
-
-    if (!botaoSalvarEdicao) {
-      throw new Error('Botão de salvar edicao não encontrado');
-    }
-
-    await clicarElemento(botaoSalvarEdicao);
-    logs.push(log('sucesso', 'Altyerações salvas e modo de edicao desativado'));
-
-    await esperar(1000);
-    return true;
-  } catch (erro) {
-    logs.push(
-      log(
-        'erro',
-        `Falha ao salvar alterações ou desativar edição: ${erro.message}`,
-      ),
-    );
-    return false;
   }
 };
 

@@ -6,7 +6,6 @@ const SeletorTipoEncaminhamento = ({
 }) => {
   return (
     <div>
-      <label htmlFor="tipoEncaminhamento">📋 Tipo de Encaminhamento:</label>
       <select
         id="tipoEncaminhamento"
         value={tipoEncaminhamento}

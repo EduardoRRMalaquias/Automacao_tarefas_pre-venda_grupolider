@@ -1,6 +1,15 @@
 import React from 'react';
 
-const BotaoRodarTodasAbas = () => {
+const BotaoRodarTodasAbas = ({
+  configuracao,
+  setStatus,
+  carregando,
+  setCarregando,
+  adicionarLog,
+  limparLogs,
+  tipoEncaminhamento,
+  textoBotao,
+}) => {
   const rodarTodasAbas = async () => {
     const { operador, marcaSelecionada, tarefaSelecionada } = configuracao;
 
@@ -52,7 +61,7 @@ const BotaoRodarTodasAbas = () => {
     >
       {carregando
         ? '⏳ Processando...'
-        : config.textoBotaoTodas || '🔄 Executar em Todas as Abas'}
+        : textoBotao || '🔄 Executar em Todas as Abas'}
     </button>
   );
 };

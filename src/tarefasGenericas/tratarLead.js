@@ -125,7 +125,7 @@ export const preencherNumeroTelefone = async function (logs) {
     }
 
     let numeroTelefone =
-      (inputCelular.value || '').trim() || (inputCelular.value || '').trim();
+      (inputCelular.value || '').trim() || (inputTelefone.value || '').trim();
 
     if (!numeroTelefone) {
       logs.push(log('alerta', 'Nenhum telefone encontrado'));
@@ -139,7 +139,7 @@ export const preencherNumeroTelefone = async function (logs) {
     await esperar(100);
 
     if (inputTelefone.value) {
-      inputTelefone.value = 0;
+      inputTelefone.value = '';
       ativarEventosElementos(inputTelefone);
     }
 

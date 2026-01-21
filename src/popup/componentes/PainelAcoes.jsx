@@ -35,7 +35,7 @@ const PainelAcoes = ({
       mostrarBotaoTodas: true,
       textoBotaoUnico: '▶️ Executar Segundo Contato',
     },
-    'encaminhar-leads': {
+    'encaminhar-lead': {
       mostrarBotaoUnico: true,
       mostrarBotaoTodas: true,
       mostrarTipoEncaminhamento: true, // ✅ NOVO
@@ -82,7 +82,7 @@ const PainelAcoes = ({
           setCarregando={setCarregando}
           adicionarLog={adicionarLog}
           limparLogs={limparLogs}
-          tipoEncaminhamento={tipoEncaminhamento} // ✅ PASSA TIPO
+          tipoEncaminhamento={tipoEncaminhamento}
           textoBotao={config.textoBotaoUnico}
         />
       )}
@@ -95,7 +95,7 @@ const PainelAcoes = ({
           setCarregando={setCarregando}
           adicionarLog={adicionarLog}
           limparLogs={limparLogs}
-          tipoEncaminhamento={tipoEncaminhamento} // ✅ PASSA TIPO
+          tipoEncaminhamento={tipoEncaminhamento}
           textoBotao={config.textoBotaoTodas}
         />
       )}

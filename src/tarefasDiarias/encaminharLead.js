@@ -24,9 +24,9 @@ export const encaminharLead = {
       const configTentativa =
         determinarTentativaEncaminhamento(tipoEncaminhamento);
 
-      if (!configTentativa) {
+      try {
         await salvarStatusTentativa(configTentativa, logs);
-      }
+      } catch {}
 
       const resultadoTratamento = await tratarLead.executar(
         {
@@ -97,7 +97,7 @@ function determinarTentativaEncaminhamento(tipoEncaminhamento) {
   const tipoContato = tipoEncaminhamento === 'contato' ? 'Whatsapp' : 'Ligação';
 
   return {
-    numeroTentaiva: 1,
+    numeroTentativa: 1,
     concluido: true,
     tipoContato,
   };

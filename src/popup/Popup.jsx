@@ -103,10 +103,18 @@ function Popup() {
     <>
       <div className="container">
         <header>
-          <img src="../icons/logo-48.png" alt="" />
+          <img src="../icons/logo-128.png" alt="" />
           <div>
             <h1>Automatização de tarefas grupolíder</h1>
-            <p>Criado por Eduardo R. R. Malaquias</p>
+            <p>
+              Criado por{' '}
+              <a
+                href="https://www.linkedin.com/in/eduardo-rr-malaquias/"
+                target="_blank"
+              >
+                Eduardo R. R. Malaquias
+              </a>
+            </p>
           </div>
         </header>
 
@@ -164,7 +172,10 @@ function Popup() {
           <section>
             <article className="secao-status">
               {status.mensagem && (
-                <div className={`status ${status.tipo}`}>
+                <div
+                  className={`status ${status.tipo}`}
+                  style={{ display: status.mensagem ? 'flex' : 'none' }}
+                >
                   <span className="icone-status">
                     {status.tipo === 'sucesso'
                       ? '✅'
@@ -212,7 +223,12 @@ function Popup() {
       </div>
 
       <footer>
-        <p>Desenvolvido por - Eduardo Rodrigues Rangel Malaquuias</p>
+        <p>
+          Desenvolvido por -{' '}
+          <a href="https://www.instagram.com/du.dustb/" target="_blank">
+            Eduardo Rodrigues Rangel Malaquias
+          </a>
+        </p>
         <p>© - GrupoLider 2025</p>
       </footer>
     </>
