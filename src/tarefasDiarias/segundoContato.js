@@ -14,13 +14,15 @@ export const segundoContato = {
     logs.push(log('info', `Iniciando Segundo Contato - ${configMarca.marca}`));
 
     try {
-      await salvarStatusTentativa(
-        {
-          numeroTentativa: 1,
-          concluido: false,
-        },
-        logs,
-      );
+      try {
+        await salvarStatusTentativa(
+          {
+            numeroTentativa: 1,
+            concluido: false,
+          },
+          logs,
+        );
+      } catch {}
 
       const configtemplate = configMarca.templates.segundoContato;
 

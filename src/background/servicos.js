@@ -247,3 +247,192 @@ export async function processarTodasAbas(
     resultados,
   };
 }
+
+export async function processarLeadsEmLote(leads, marca) {
+  console.log('\n════════════════════════════════════════');
+  console.log('🚀 INICIANDO CADASTRO EM LOTE');
+  console.log(`📊 Total de leads: ${leads.length}`);
+  console.log(`🏢 Marca: ${marca}`);
+  console.log('════════════════════════════════════════\n');
+
+  enviarLogPopup('info', `Iniciando cadastro de ${leads.length} leads...`);
+
+  let abas = await chrome.tabs.query({
+    url: 'https://grupolider.lightning.force.com/*',
+  });
+
+  let idAba;
+
+  if (abas.length > 0) {
+    idAba = abas[0].id;
+    console.log(`✓ Usando aba existente: ${idAba}`);
+
+    await chrome.tabs.update(idAba, {
+      url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
+      active: true,
+    });
+  } else {
+    const aba = await chrome.tabs.create({
+      url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
+      active: true,
+    });
+    idAba = aba.id;
+    console.log(`✓ Nova aba criada: ${idAba}`);
+  }
+
+  await esperar(4000);
+
+  const resultados = {
+    total: leads.length,
+    processados: 0,
+    sucessos: 0,
+    falhas: 0,
+    detalhes: [],
+  };
+
+  for (let index = 0; index < leads.length; index++) {
+    await garantirCarregamentoScripts(idAba);
+
+    const lead = leads[index];
+    const numeroLead = index + 1;
+
+    console.log(`\n─────────────────────────────────────`);
+    console.log(`📝 LEAD ${numeroLead}/${leads.length}`);
+    console.log(`Nome: ${lead.primeiroNome || ''} ${lead.sobrenome}`);
+    console.log(`─────────────────────────────────────`);
+
+    const nomeExibicao = lead.primeiroNome
+      ? `${lead.primeiroNome} ${lead.sobrenome}`
+      : lead.sobrenome;
+
+    enviarLogPopup('info', `[${numeroLead}/${leads.length}] ${nomeExibicao}`);
+
+    try {
+      const infoAba = await chrome.tabs.get(idAba);
+
+      if (!infoAba.url.includes('/o/Lead/new')) {
+        console.log('⚠ Não está em /o/Lead/new, navegando...');
+
+        await chrome.tabs.update(idAba, {
+          url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
+        });
+
+        await esperar(4000);
+        await garantirCarregamentoScripts(idAba);
+      }
+
+      console.log('→ Enviando dados do lead...');
+
+      const resposta = await chrome.tabs.sendMessage(idAba, {
+        acao: 'cadastrar-um-lead',
+        dadosLead: lead,
+        marca: marca,
+      });
+
+      if (resposta && resposta.sucesso) {
+        console.log(`✅ Lead ${numeroLead} cadastrado: ${resposta.leadUrl}`);
+
+        resultados.sucessos++;
+        resultados.detalhes.push({
+          lead: lead,
+          sucesso: true,
+          leadUrl: resposta.leadUrl,
+          logs: resposta.logs,
+        });
+
+        enviarLogPopup('sucesso', `✓ ${nomeExibicao} cadastrado`);
+
+        await esperar(2000);
+
+        console.log('← Voltando para /o/Lead/new...');
+
+        await chrome.tabs.update(idAba, {
+          url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
+        });
+
+        await esperar(4000);
+      } else {
+        console.error(
+          `❌ Falha no lead ${numeroLead}: ${resposta?.erro || 'Sem resposta'}`,
+        );
+
+        resultados.falhas++;
+        resultados.detalhes.push({
+          lead: lead,
+          sucesso: false,
+          erro: resposta?.erro || 'Sem resposta do content script',
+          logs: resposta?.logs || [],
+        });
+
+        enviarLogPopup(
+          'erro',
+          `✗ ${nomeExibicao}: ${resposta?.erro || 'Erro desconhecido'}`,
+        );
+
+        await chrome.tabs.update(idAba, {
+          url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
+        });
+        await esperar(4000);
+      }
+    } catch (erro) {
+      console.error(`❌ Erro crítico no lead ${numeroLead}:`, erro);
+
+      resultados.falhas++;
+      resultados.detalhes.push({
+        lead: lead,
+        sucesso: false,
+        erro: `Erro crítico: ${erro.message}`,
+        logs: [],
+      });
+
+      enviarLogPopup('erro', `✗ Erro crítico: ${erro.message}`);
+
+      try {
+        await chrome.tabs.update(idAba, {
+          url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
+        });
+        await esperar(4000);
+      } catch (errorRecuperacao) {
+        console.error('❌ Não foi possível recuperar. Abortando lote.');
+        enviarLogPopup('erro', 'Processamento abortado - erro irrecuperável');
+        break;
+      }
+    }
+
+    resultados.processados = numeroLead;
+    enviarAtualizacaoProgresso(resultados);
+  }
+
+  console.log('\n════════════════════════════════════════');
+  console.log('✅ CADASTRO EM LOTE CONCLUÍDO');
+  console.log(`📊 Total: ${resultados.total}`);
+  console.log(`✅ Sucessos: ${resultados.sucessos}`);
+  console.log(`❌ Falhas: ${resultados.falhas}`);
+  console.log('════════════════════════════════════════\n');
+
+  enviarLogPopup(
+    'sucesso',
+    `Concluido! ${resultados.sucessos} sucessos, ${resultados.falhas} falhas`,
+  );
+
+  return resultados;
+}
+
+async function enviarAtualizacaoProgresso(resultados) {
+  try {
+    await chrome.runtime.sendMessage({
+      acao: 'atualizar-progresso',
+      progresso: {
+        processados: resultados.processados,
+        total: resultados.total,
+        sucessos: resultados.sucessos,
+        falhas: resultados.falhas,
+        percentual: Math.round(
+          (resultados.processados / resultados.total) * 100,
+        ),
+      },
+    });
+  } catch (e) {
+    // Ignora se popup fechado
+  }
+}

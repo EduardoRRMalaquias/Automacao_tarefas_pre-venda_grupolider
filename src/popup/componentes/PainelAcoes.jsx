@@ -65,11 +65,15 @@ const PainelAcoes = ({
 
       {config.cadastrarLeads && (
         <CadastrarLead
+          configuracao={configuracao}
           setStatus={setStatus}
+          carregando={carregando}
+          setCarregando={setCarregando}
           arquivo={arquivo}
           setArquivo={setArquivo}
           textoUpload={config.textoUpload}
           adicionarLog={adicionarLog}
+          limparLogs={limparLogs}
         />
       )}
 

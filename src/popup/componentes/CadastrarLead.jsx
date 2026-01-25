@@ -1,27 +1,44 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { coletarDadosPlanilha } from '../../background/coletarDadosPlanilha';
 
 const CadastrarLead = ({
+  configuracao,
   setStatus,
+  carregando,
+  setCarregando,
   arquivo,
   setArquivo,
   textoUpload,
   adicionarLog,
+  limparLogs,
 }) => {
   const carregarArquivo = (e) => {
-    const arquivo = e.target.files[0];
-    if (arquivo) {
-      setArquivo(arquivo);
-      adicionarLog('info', `Arquivo selecionado: ${arquivo.name}`);
+    const arquivoSelecionado = e.target.files[0];
+    if (arquivoSelecionado) {
+      setArquivo(arquivoSelecionado);
+      adicionarLog('info', `Arquivo selecionado: ${arquivoSelecionado.name}`);
     }
   };
 
   const rodarCadastrarLeads = async () => {
-    if (!arquivo) {
+    const { operador, marcaSelecionada } = configuracao;
+
+    if (!operador) {
       setStatus({
         tipo: 'erro',
-        mensagem: 'Selecione uma planilha primeiro',
+        mensagem: 'Config o nome do operador primeiro',
       });
       return;
+    }
+
+    if (!arquivo) {
+      {
+        setStatus({
+          tipo: 'erro',
+          mensagem: 'Selecione uma planilha primeiro',
+        });
+        return;
+      }
     }
 
     try {
@@ -31,72 +48,56 @@ const CadastrarLead = ({
 
       adicionarLog('info', `📄 Lendo arquivo: ${arquivo.name}`);
 
-      // ────────────────────────────────────────────────
-      // ETAPA 1: Parse planilha
-      // ────────────────────────────────────────────────
-
-      // POR QUE NO POPUP?
-      // - FileReader só funciona onde arquivo foi selecionado
-      // - Background não tem acesso ao File object
-      // - Parse é rápido (< 1 segundo)
-      const resultado = await PlanilhaParser.parse(arquivo);
+      const resultado = await coletarDadosPlanilha(arquivo);
+      console.log(resultado);
 
       adicionarLog('info', `📊 Total de linhas: ${resultado.total}`);
       adicionarLog('sucesso', `✅ Leads válidos: ${resultado.validos}`);
 
-      // Mostra erros se houver
       if (resultado.invalidos > 0) {
         adicionarLog('alerta', `⚠️ Leads inválidos: ${resultado.invalidos}`);
 
-        // Lista primeiros 5 erros (para não poluir UI)
         const errosExibir = resultado.erros.slice(0, 5);
         errosExibir.forEach((erro) => {
           const mensagemErro = erro.erros ? erro.erros.join(', ') : erro.erro;
-          adicionarLog('erro', `Linha ${erro.linha}: ${mensagemErro}`);
+          adicionarLog('erro', `  Linha ${erro.linha}: ${mensagemErro} erros`);
         });
-
-        if (resultado.invalidos > 5) {
-          adicionarLog('info', `... e mais ${resultado.invalidos - 5} erros`);
-        }
       }
 
-      // Validação: precisa ter pelo menos 1 lead válido
+      if (resultado.invalidos > 5) {
+        adicionarLog(`info`, `... e mais ${resultado.invalidos - 5}`);
+      }
+
       if (resultado.validos === 0) {
         setStatus({
           tipo: 'erro',
           mensagem: 'Nenhum lead válido encontrado na planilha',
         });
         setCarregando(false);
+        adicionarLog('erro', 'Corrija os erros na planilha e tente novamente');
         return;
       }
 
-      // ────────────────────────────────────────────────
-      // ETAPA 2: Confirmação do usuário
-      // ────────────────────────────────────────────────
+      const tempoEstimado = Math.ceil(resultado.validos * 0.5);
 
-      // POR QUE CONFIRMAR?
-      // - Processo é longo (pode levar 10+ minutos)
-      // - Usuário vê quantos leads serão processados
-      // - Pode cancelar se identificar problema
       const confirmar = window.confirm(
-        `Encontrados ${resultado.validos} leads válidos.\n` +
+        `📊 Encontrados ${resultado.validos} leads válidos.\n` +
           (resultado.invalidos > 0
-            ? `${resultado.invalidos} leads com erros serão ignorados.\n\n`
-            : '\n') +
-          `Tempo estimado: ~${Math.ceil(resultado.validos * 0.5)} minutos\n\n` +
+            ? `⚠️ ${resultado.invalidos} leads com erros serão ignorados.\n\n`
+            : '/n'),
+        `⏱️ Tempo estimado: ~${tempoEstimado} minuto(s)\n\n` +
           `Continuar com o cadastro?`,
       );
 
       if (!confirmar) {
-        setStatus({ tipo: '', mensagem: '' });
+        setStatus({
+          tipo: 'info',
+          mensagem: '❌ Cadastro cancelado pelo usuário',
+        });
         setCarregando(false);
-        adicionarLog('info', 'Cadastro cancelado pelo usuário');
+        adicionarLog('info', '❌ Cadastro cancelado pelo usuário');
         return;
       }
-
-      // ────────────────────────────────────────────────
-      // ETAPA 3: Enviar para background processar
-      // ────────────────────────────────────────────────
 
       adicionarLog(
         'info',
@@ -108,11 +109,6 @@ const CadastrarLead = ({
         mensagem: `Processando ${resultado.validos} leads...`,
       });
 
-      // POR QUE NÃO USAR AWAIT?
-      // - Processo é longo (10+ minutos para 50 leads)
-      // - chrome.runtime.sendMessage tem timeout de ~30s
-      // - Não conseguimos aguardar resposta completa
-      // - Receberemos atualizações via 'atualizar-progresso'
       chrome.runtime.sendMessage({
         acao: 'processar-leads-planilha',
         leads: resultado.leads,
@@ -123,16 +119,40 @@ const CadastrarLead = ({
         'sucesso',
         '✅ Processamento iniciado! Acompanhe o progresso abaixo.',
       );
-
-      // NÃO seta carregando=false aqui
-      // Será desativado quando receber último 'atualizar-progresso'
     } catch (erro) {
-      console.error('Erro ao processar planilha:', erro);
+      console.error('❌ Erro ao processar planilha:', erro);
       setStatus({ tipo: 'erro', mensagem: `Erro: ${erro.message}` });
       adicionarLog('erro', `❌ ${erro.message}`);
       setCarregando(false);
     }
   };
+
+  useEffect(() => {
+    const listener = (requisicao) => {
+      if (requisicao.acao === 'atualizar-progresso') {
+        const { progresso } = requisicao;
+
+        setStatus({
+          tipo: 'carregando',
+          mensagem: `Processando: ${progresso.processados}/${progresso.total} (${progresso.percentual}%) - ✅ ${progresso.sucessos} OK, ❌ ${progresso.falhas} erros`,
+        });
+
+        if (progresso.processados === progresso.total) {
+          setStatus({
+            tipo: progresso.falhas === 0 ? 'sucesso' : 'alerta',
+            mensagem: `✅ Concluído! ${progresso.sucessos} sucessos, ${progresso.falhas} falhas`,
+          });
+          setCarregando(false);
+        }
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(listener);
+
+    return () => {
+      chrome.runtime.onMessage.removeListener(listener);
+    };
+  }, [[setStatus, setCarregando]]);
 
   return (
     <>
@@ -149,7 +169,13 @@ const CadastrarLead = ({
         />
         {arquivo && <span className="arquivo-nome">✅ {arquivo.name}</span>}
       </div>
-      <div></div>
+      <button
+        onClick={rodarCadastrarLeads}
+        disabled={carregando}
+        className="botao-primario"
+      >
+        {carregando ? '⏳ Processando...' : '📤 Cadastrar Leads'}
+      </button>
     </>
   );
 };

@@ -1,18 +1,13 @@
 import './marcas/gerenciadorMarcas.js';
 import './marcas/gwm.js';
 import { isPaginaLead } from './ultilitarios/utilitarios.js';
+import { cadastrarLeads } from './tarefasDiarias/cadastrarLead.js';
 
 (function () {
   'use strict';
   console.log(
     '🚀 automação de Leads GrupoLider - Content Script Carregado com Webpack!',
   );
-
-  // function isPaginaLead() {
-  //   return window.location.href.includes(
-  //     'lightning.force.com/lightning/r/Lead/',
-  //   );
-  // }
 
   //recebe mensagens enviadas do popup
   chrome.runtime.onMessage.addListener(
@@ -40,6 +35,32 @@ import { isPaginaLead } from './ultilitarios/utilitarios.js';
                 {
                   tipo: 'erro',
                   mensagem: erro.message,
+                },
+              ],
+            });
+          });
+
+        return true;
+      }
+
+      if (requisicao.acao === 'cadastrar-um-lead') {
+        console.log('Dados recebidos', requisicao.dadosLead);
+
+        cadastrarLeads
+          .executar(requisicao.dadosLead)
+          .then((resposta) => {
+            console.log('✅ Lead cadastrado:', resposta);
+            enviarResposta(resposta);
+          })
+          .catch((erro) => {
+            console.error('❌ Erro ao cadastrar lead:', erro);
+            enviarResposta({
+              sucesso: false,
+              erro: erro.message,
+              logs: [
+                {
+                  tipo: 'erro',
+                  mensagem: `Erro fatal: ${erro.message}`,
                 },
               ],
             });

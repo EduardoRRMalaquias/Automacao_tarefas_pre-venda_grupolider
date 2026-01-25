@@ -48,6 +48,18 @@ export const seletores = {
       secaoTarefa:
         'fieldset[data-aura-class="forcePageBlockSection forcePageBlockSectionEdit"]',
     },
+
+    novoLead: {
+      inputs: {
+        email: 'input[name="Email"]',
+        cpf: 'input[name="CPF__c"]',
+      },
+
+      comboboxes: {
+        origem: 'button[role="combobox"][aria-label="Origem do lead"]',
+        conssecionaria: 'input[placeholder="Pesquisar Contas…"]',
+      },
+    },
   },
 
   // ========== BEETALK (WhatsApp) ==========

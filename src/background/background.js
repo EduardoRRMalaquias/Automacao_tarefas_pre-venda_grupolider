@@ -1,6 +1,7 @@
 // ========== Background Service Worker ==========
 import { processarAba } from './servicos.js';
 import { processarTodasAbas } from './servicos.js';
+import { processarLeadsEmLote } from './servicos.js';
 
 console.log(
   '🔧 Grupolider automação de Leads - Background Service Worker Iniciado',
@@ -59,6 +60,33 @@ chrome.runtime.onMessage.addListener(
             mensagem: erro.message,
           });
         });
+
+      return false;
+    }
+
+    if (requisicao.acao === 'processar-leads-planilha') {
+      console.log(
+        `Comando Processar ${requisicao.leads.length} leads da planilha`,
+      );
+
+      processarLeadsEmLote(requisicao.leads, requisicao.marca)
+        .then((resultado) => {
+          console.log('✅ Lote de leads processado:', resultado);
+        })
+        .catch((erro) => {
+          console.error('❌ Erro no processamento de leads:', erro);
+          chrome.runtime.sendMessage({
+            acao: 'logs-automacao',
+            tipo: 'erro',
+            mensagem: `Erro fatal: ${erro.mesage}`,
+          });
+        })
+        .catch(() => {});
+
+      enviarResposta({
+        iniciado: true,
+        mensagem: `Processamento de ${requisicao.leads.length} leads iniciado`,
+      });
 
       return false;
     }

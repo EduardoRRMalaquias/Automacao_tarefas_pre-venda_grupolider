@@ -134,7 +134,7 @@ const preencherCampostemplate = async (
     //Valor do  campo
     let valorCampo;
     if (campo.valor === 'nome') {
-      valorCampo = nome;
+      valorCampo = nome + ' ';
     } else if (campo.valor === 'modelo') {
       valorCampo = modelo;
     } else if (campo.valor === 'saudacao') {
