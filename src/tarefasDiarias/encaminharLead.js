@@ -6,6 +6,7 @@ import {
   log,
   registrarTarefa,
   salvarStatusTentativa,
+  TIMEOUTS,
 } from '../ultilitarios/utilitarios';
 
 export const encaminharLead = {
@@ -49,7 +50,7 @@ export const encaminharLead = {
         logs,
       );
 
-      await esperar(800);
+      await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
       const { menssagemMascaraTarefa, assuntoMascaraTarefa } =
         montarMascaraTarefa(
@@ -63,7 +64,7 @@ export const encaminharLead = {
         );
 
       console.log(menssagemMascaraTarefa, assuntoMascaraTarefa);
-      await esperar(800);
+      await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
       await registrarTarefa(
         menssagemMascaraTarefa,
@@ -144,9 +145,9 @@ function montarMascaraTarefa(configMarca, dadosLead, tipoEncaminhamento) {
     `VEÍCULO DE INTERESSE: ${modelo || 'NÃO INFORMADO'}\n` +
     `FORMA DE CONTATO: ${formaContato}\n` +
     `OBS: CLIENTE DESEJA SABER MAIS INFORMAÇÕES DE VALORES E CONDIÇÕES DO ${
-      modelo || 'VEÍCULO\n'
+      modelo || 'VEÍCULO \n'
     }` +
-    `Favor realizar tentativa de contato com o cliente.`;
+    `\nFavor realizar tentativa de contato com o cliente.`;
 
   return { menssagemMascaraTarefa, assuntoMascaraTarefa };
 }

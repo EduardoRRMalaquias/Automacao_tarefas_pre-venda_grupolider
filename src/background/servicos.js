@@ -1,3 +1,5 @@
+import { TIMEOUTS } from '../ultilitarios/utilitarios';
+
 const esperar = (tempo) => {
   return new Promise((resolver) => {
     setTimeout(resolver, tempo);
@@ -42,7 +44,7 @@ async function garantirCarregamentoScripts(idAba) {
       files: ['content.bundle.js'],
     });
 
-    await esperar(1000);
+    await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
     const teste = await chrome.tabs.sendMessage(idAba, { acao: 'ping' });
 
@@ -57,7 +59,7 @@ async function garantirCarregamentoScripts(idAba) {
   // Regarregar pagina
   console.log(`Aba ${idAba}: Recarregando pagina...`);
   await chrome.tabs.reload(idAba);
-  await esperar(4000);
+  await esperar(TIMEOUTS.SISTEMA);
 
   try {
     const teste = await chrome.tabs.sendMessage(idAba, { acao: 'ping' });
@@ -81,6 +83,22 @@ export async function processarAba(
   console.log(`\n=== PROCESSANDO ABA ${idAba} ===`);
 
   try {
+    const infoAba = await chrome.tabs.get(idAba);
+    const idJanela = infoAba.windowId;
+
+    const infoJanela = await chrome.windows.get(idJanela);
+
+    if (infoJanela.state === 'minimized') {
+      console.log(`📍 Janela ${idJanela} está minimizada, restaurando...`);
+      await chrome.windows.update(idJanela, {
+        state: 'normal',
+        focused: false,
+      });
+      await esperar(TIMEOUTS.TRANSICAO);
+    }
+
+    await chrome.tabs.update(idAba, { active: true });
+
     enviarLogPopup('info', `Processando aba ${idAba}...`);
 
     const carregamento = await garantirCarregamentoScripts(idAba);
@@ -105,7 +123,7 @@ export async function processarAba(
         });
       }
 
-      esperar(2000);
+      await esperar(TIMEOUTS.RAPIDO);
 
       if (tarefa === 'encaminhar-lead') {
         try {
@@ -177,9 +195,27 @@ export async function processarTodasAbas(
   console.log('🚀 INICIANDO PROCESSAMENTO EM LOTE');
   console.log('========================================\n');
 
-  enviarLogPopup('info', 'Bucando abas dd Lead...');
+  const [abaAtiva] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+
+  if (!abaAtiva) {
+    console.error('❌ Nenhuma aba ativa encontrada');
+    enviarLogPopup('erro', 'Nenhuma janela ativa detectada');
+    return {
+      sucesso: false,
+      erro: 'Nenhuma janela ativa',
+    };
+  }
+
+  const idJanela = abaAtiva.windowId;
+
+  console.log(`📍 Processando abas da janela ${idJanela}`);
+  enviarLogPopup('info', 'Buscando abas de Lead na janela atual...');
 
   const abas = await chrome.tabs.query({
+    windowId: idJanela,
     url: 'https://grupolider.lightning.force.com/lightning/r/Lead/*',
   });
 
@@ -192,13 +228,16 @@ export async function processarTodasAbas(
     };
   }
 
-  console.log(`📊 Encontradas ${abas.length} aba(s) de Lead`);
-  enviarLogPopup('info', `Encontradas ${abas.length} aba(s) de Lead`);
+  console.log(
+    `📊 Encontradas ${abas.length} aba(s) de Lead na janela ${idJanela}`,
+  );
+  enviarLogPopup(
+    'info',
+    `Encontradas ${abas.length} aba(s) de Lead nesta janela`,
+  );
 
   // contadores
-  let contagemSucessos = 0;
-  let contagemFalhas = 0;
-  const resultados = [];
+  const resultados = { sucesso: [], falhas: [], total: abas.length };
 
   for (let i = 0; i < abas.length; i++) {
     const aba = abas[i];
@@ -210,28 +249,43 @@ export async function processarTodasAbas(
     enviarLogPopup('info', `[${i + 1}/${abas.length}] ${aba.title}`);
 
     //processa aba
-    const resultado = await processarAba(
-      aba.id,
-      marca,
-      tarefa,
-      tipoEncaminhamento,
-    );
-    resultados.push(resultado);
+    try {
+      const resultado = await processarAba(
+        aba.id,
+        marca,
+        tarefa,
+        tipoEncaminhamento,
+      );
 
-    if (resultado.sucesso) {
-      contagemSucessos++;
-    } else {
-      contagemFalhas++;
+      if (resultado.sucesso) {
+        resultados.sucesso.push(resultado);
+      } else {
+        resultados.falhas.push(resultado);
+      }
+    } catch (error) {
+      console.error(`❌ Erro crítico na aba ${aba.id}:`, erro);
+
+      resultados.falhas.push({
+        sucesso: false,
+        idAba: aba.id,
+        erro: `Erro crítico: ${erro.message}`,
+        stack: erro.stack,
+      });
+
+      enviarLogPopup('erro', `✗ Aba ${aba.id}: Erro crítico - continuando...`);
     }
 
-    await esperar(3000);
+    await esperar(TIMEOUTS.RAPIDO);
   }
+
+  const contagemSucessos = resultados.sucesso.length;
+  const contagemFalhas = resultados.falhas.length;
 
   // Finalizar
   console.log('\n========================================');
   console.log('✅ PROCESSAMENTO CONCLUÍDO');
-  console.log(`Sucessos: ${contagemSucessos}`);
-  console.log(`Falhas: ${contagemFalhas}`);
+  console.log(`Sucessos: ${contagemSucessos}/${resultados.total}`);
+  console.log(`Falhas: ${contagemFalhas}/${resultados.total}`);
   console.log('========================================\n');
 
   enviarLogPopup(
@@ -257,22 +311,64 @@ export async function processarLeadsEmLote(leads, marca) {
 
   enviarLogPopup('info', `Iniciando cadastro de ${leads.length} leads...`);
 
-  let abas = await chrome.tabs.query({
+  const [abaAtiva] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+
+  if (!abaAtiva) {
+    const erro = 'Nenhuma janela ativa encontrada';
+    console.error(`❌ ${erro}`);
+    enviarLogPopup('erro', erro);
+    throw new Error(erro);
+  }
+
+  const idJanela = abaAtiva.windowId;
+  console.log(`📍 Usando janela ${idJanela}`);
+
+  let abasSalesforce = await chrome.tabs.query({
     url: 'https://grupolider.lightning.force.com/*',
   });
 
+  const abasLeads = abasSalesforce.filter((aba) =>
+    aba.url.includes('/lightning/o/Lead/'),
+  );
+
+  const abaNovoLead = abasLeads.find((aba) =>
+    aba.url.includes('/lightning/o/Lead/new'),
+  );
+
   let idAba;
 
-  if (abas.length > 0) {
-    idAba = abas[0].id;
-    console.log(`✓ Usando aba existente: ${idAba}`);
+  if (abaNovoLead) {
+    idAba = abaNovoLead.id;
+    console.log(`✓ Usando aba existente em /o/Lead/new: ${idAba}`);
 
-    await chrome.tabs.update(idAba, {
-      url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
-      active: true,
-    });
+    await chrome.tabs.update(idAba, { active: true });
+  } else if (abasLeads.length > 0) {
+    const temAbaLeadsAtiva = abasLeads.find((aba) => aba.active);
+
+    if (temAbaLeadsAtiva) {
+      idAba = temAbaLeadsAtiva.id;
+      console.log(`✓ Navegando aba ativa ${idAba} para /o/Lead/new`);
+
+      await chrome.tabs.update(idAba, {
+        url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
+      });
+    } else {
+      idAba = abasLeads[0].id;
+      console.log(`✓ Navegando aba existente ${idAba} para /o/Lead/new`);
+
+      await chrome.tabs.update(idAba, {
+        url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
+        active: true,
+      });
+    }
   } else {
+    console.log(`✓ Criando nova aba na janela ${idJanela}`);
+
     const aba = await chrome.tabs.create({
+      windowId: idJanela,
       url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
       active: true,
     });
@@ -280,7 +376,7 @@ export async function processarLeadsEmLote(leads, marca) {
     console.log(`✓ Nova aba criada: ${idAba}`);
   }
 
-  await esperar(4000);
+  await esperar(TIMEOUTS.SISTEMA);
 
   const resultados = {
     total: leads.length,
@@ -317,7 +413,7 @@ export async function processarLeadsEmLote(leads, marca) {
           url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
         });
 
-        await esperar(4000);
+        await esperar(TIMEOUTS.LONGO);
         await garantirCarregamentoScripts(idAba);
       }
 
@@ -342,7 +438,7 @@ export async function processarLeadsEmLote(leads, marca) {
 
         enviarLogPopup('sucesso', `✓ ${nomeExibicao} cadastrado`);
 
-        await esperar(2000);
+        await esperar(TIMEOUTS.RAPIDO);
 
         console.log('← Voltando para /o/Lead/new...');
 
@@ -350,7 +446,7 @@ export async function processarLeadsEmLote(leads, marca) {
           url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
         });
 
-        await esperar(4000);
+        await esperar(TIMEOUTS.LONGO);
       } else {
         console.error(
           `❌ Falha no lead ${numeroLead}: ${resposta?.erro || 'Sem resposta'}`,
@@ -372,7 +468,7 @@ export async function processarLeadsEmLote(leads, marca) {
         await chrome.tabs.update(idAba, {
           url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
         });
-        await esperar(4000);
+        await esperar(TIMEOUTS.LONGO);
       }
     } catch (erro) {
       console.error(`❌ Erro crítico no lead ${numeroLead}:`, erro);
@@ -391,7 +487,7 @@ export async function processarLeadsEmLote(leads, marca) {
         await chrome.tabs.update(idAba, {
           url: 'https://grupolider.lightning.force.com/lightning/o/Lead/new',
         });
-        await esperar(4000);
+        await esperar(TIMEOUTS.LONGO);
       } catch (errorRecuperacao) {
         console.error('❌ Não foi possível recuperar. Abortando lote.');
         enviarLogPopup('erro', 'Processamento abortado - erro irrecuperável');

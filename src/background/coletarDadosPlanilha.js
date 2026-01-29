@@ -44,8 +44,8 @@ async function coletarExcel(arquivo) {
 
     leitor.onload = (e) => {
       try {
-        const data = new Uint8Array(e.target.result);
-        const planilhas = XLSX.read(data, { type: 'array' });
+        const dados = new Uint8Array(e.target.result);
+        const planilhas = XLSX.read(dados, { type: 'array' });
 
         const primeiraAba = planilhas.SheetNames[0];
         const planilha = planilhas.Sheets[primeiraAba];
@@ -53,6 +53,7 @@ async function coletarExcel(arquivo) {
         const dadosJson = XLSX.utils.sheet_to_json(planilha);
 
         const resultado = processarLinhas(dadosJson);
+        console.log(resultado);
         resolver(resultado);
       } catch (erro) {
         rejeitar(new Error(`Erro ao ler Excel: ${erro.message}`));
@@ -72,6 +73,7 @@ function processarLinhas(linhas) {
 
     try {
       const lead = mapearLead(linha, numeroLinha);
+      console.log(lead);
       const validacao = validarlead(lead);
 
       if (validacao.valido) {
@@ -144,7 +146,7 @@ function validarlead(lead) {
     erros.push('Sobrenome ausente');
   }
 
-  if (!lead.celular?.trim()) {
+  if (!lead.celular) {
     erros.push('Celular ausente');
   }
 

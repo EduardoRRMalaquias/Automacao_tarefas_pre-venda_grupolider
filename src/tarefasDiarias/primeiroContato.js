@@ -1,5 +1,5 @@
 import { tratarLead } from '../tarefasGenericas/tratarLead.js';
-import { enviartemplate } from '../tarefasGenericas/enviarTemplate.js';
+import { enviarTemplate } from '../tarefasGenericas/enviarTemplate.js';
 import {
   getOperador,
   log,
@@ -34,7 +34,7 @@ export const primeiroContato = {
         configtemplate = primeiroContatoSemModelo;
       }
 
-      const resultadoEnviotemplate = await enviartemplate.executar(
+      const resultadoEnviotemplate = await enviarTemplate.executar(
         configMarca.pasta,
         configtemplate,
         nomeFormatado,

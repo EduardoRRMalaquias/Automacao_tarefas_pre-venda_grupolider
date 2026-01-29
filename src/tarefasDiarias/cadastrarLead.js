@@ -5,6 +5,7 @@ import {
   clicarElemento,
   ativarEventosElementos,
   selecionarOpcaoCombobox,
+  TIMEOUTS,
 } from '../ultilitarios/utilitarios';
 import { seletores } from '../ultilitarios/seletores';
 
@@ -66,7 +67,7 @@ const aguardarFormulario = async (logs) => {
   logs.push(log('info', '⏳ Aguardando formulário...'));
 
   await esperarElemento(seletores.salesforce.inputs.sobrenome, 5000);
-  await esperar(1000);
+  await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
   logs.push(log('sucesso', '✓ Formulário pronto'));
 };
@@ -130,7 +131,7 @@ const preencherFormulario = async (dadosLead, logs) => {
       logs,
       'Classificação',
     );
-    await esperar(300);
+    await esperar(TIMEOUTS.CLIQUE);
   }
 
   // Marca
@@ -141,7 +142,7 @@ const preencherFormulario = async (dadosLead, logs) => {
     logs,
     'Marca',
   );
-  await esperar(500);
+  await esperar(TIMEOUTS.DIGITACAO);
 
   //Categoria: ex: Novos, seminovos
   await selecionarOpcaoCombobox(
@@ -151,7 +152,7 @@ const preencherFormulario = async (dadosLead, logs) => {
     logs,
     'Categoria',
   );
-  await esperar(300);
+  await esperar(TIMEOUTS.CLIQUE);
 
   //Interesse em: ex: Carros, motos
   await selecionarOpcaoCombobox(
@@ -161,7 +162,7 @@ const preencherFormulario = async (dadosLead, logs) => {
     logs,
     'Interesse em',
   );
-  await esperar(300);
+  await esperar(TIMEOUTS.CLIQUE);
 
   // MODELO
   if (dadosLead.modelo) {
@@ -182,7 +183,7 @@ const preencherFormulario = async (dadosLead, logs) => {
     logs,
     'Origem do Lead',
   );
-  await esperar(1000);
+  await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
   //Conssecionaria
   await preencherInput(
@@ -192,7 +193,7 @@ const preencherFormulario = async (dadosLead, logs) => {
     logs,
     true,
   );
-  await esperar(1000);
+  await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
   await selecionarOpcaoCombobox(
     seletores.salesforce.novoLead.comboboxes.conssecionaria,
@@ -201,7 +202,7 @@ const preencherFormulario = async (dadosLead, logs) => {
     logs,
     'Concessionária',
   );
-  await esperar(300);
+  await esperar(TIMEOUTS.CLIQUE);
 
   logs.push(log('sucesso', '✓ Todos os campos preenchidos'));
 };
@@ -214,12 +215,12 @@ const preencherInput = async (
   obrigatorio = false,
 ) => {
   try {
-    const tempoEspera = obrigatorio ? 5000 : 1000;
+    const tempoEspera = obrigatorio ? TIMEOUTS.SISTEMA : TIMEOUTS.ULTRA_RAPIDO;
     const input = await esperarElemento(seletor, tempoEspera);
 
     input.value = valor;
     ativarEventosElementos(input);
-    await esperar(100);
+    await esperar(TIMEOUTS.DIGITACAO);
 
     logs.push(log('sucesso', `  ✓ ${label}: ${valor}`));
   } catch (erro) {
@@ -235,13 +236,13 @@ const salvar = async (logs) => {
 
   const botaoSalvar = await esperarElemento(
     seletores.salesforce.botoes.salvarEdicao,
-    5000,
+    TIMEOUTS.SISTEMA,
   );
 
   await clicarElemento(botaoSalvar);
   logs.push(log('info', '  Aguardando salvamento...'));
 
-  await esperar(5000);
+  await esperar(TIMEOUTS.SISTEMA);
 
   console.log(window.location.href);
   if (
@@ -255,7 +256,7 @@ const salvar = async (logs) => {
   }
 
   logs.push(log('info', '  Aguardando mais...'));
-  await esperar(5000);
+  await esperar(TIMEOUTS.SISTEMA);
 
   if (
     window.location.href.includes(

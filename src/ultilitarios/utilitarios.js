@@ -1,6 +1,19 @@
 'use strict';
 import { seletores } from './seletores';
 
+export const TIMEOUTS = {
+  ULTRA_RAPIDO: 800,
+  RAPIDO: 2000,
+  PADRAO: 10000,
+  LONGO: 30000,
+
+  DIGITACAO: 100,
+  CLIQUE: 200,
+  TRANSICAO: 500,
+
+  SISTEMA: 5000,
+};
+
 export async function getOperador() {
   return new Promise((resolver) => {
     chrome.storage.local.get(['operador'], (resultado) => {
@@ -33,7 +46,7 @@ export const log = (tipo, mensagem) => {
   return { tipo, mensagem };
 };
 
-export const esperarElemento = async (seletor, tempo = 10000) => {
+export const esperarElemento = async (seletor, tempo = TIMEOUTS.SISTEMA) => {
   return new Promise((resolver, rejeitar) => {
     const elemento = document.querySelector(seletor);
 
@@ -76,9 +89,9 @@ export const ativarEventosElementos = (elemento) => {
   elemento.dispatchEvent(new Event('keyup', { bubbles: true }));
 };
 
-export const clicarElemento = async (elemento, tempo = 300) => {
+export const clicarElemento = async (elemento, tempo = TIMEOUTS.CLIQUE) => {
   elemento.click();
-  await esperar(300);
+  await esperar(tempo);
 };
 
 export const formatarNumeroTelefone = (numeroTelefone) => {
@@ -99,7 +112,7 @@ export const ativarModoEdicao = async function (logs) {
     );
     await clicarElemento(botaoEdicao);
     logs.push(log('sucesso', 'Modo de edicao ativado'));
-    await esperar(1000);
+    await esperar(TIMEOUTS.ULTRA_RAPIDO);
     return true;
   } catch {}
 };
@@ -110,7 +123,7 @@ export const salvarDesativarModoEdicao = async function (logs) {
   try {
     const botaoSalvarEdicao = await esperarElemento(
       seletores.salesforce.botoes.salvarEdicao,
-      5000,
+      TIMEOUTS.SISTEMA,
     );
 
     if (!botaoSalvarEdicao) {
@@ -120,7 +133,7 @@ export const salvarDesativarModoEdicao = async function (logs) {
     await clicarElemento(botaoSalvarEdicao);
     logs.push(log('sucesso', 'Altyerações salvas e modo de edicao desativado'));
 
-    await esperar(1000);
+    await esperar(TIMEOUTS.ULTRA_RAPIDO);
     return true;
   } catch (erro) {
     logs.push(
@@ -150,7 +163,7 @@ export const salvarStatusTentativa = async (config, logs) => {
 
     const botaoAbrirModal = await esperarElemento(
       seletores.salesforce.botoes.abrirModalTentativa,
-      5000,
+      TIMEOUTS.RAPIDO,
     );
 
     if (!botaoAbrirModal) {
@@ -170,7 +183,7 @@ export const salvarStatusTentativa = async (config, logs) => {
     }
 
     await clicarElemento(botaoAbrirModal);
-    await esperar(800);
+    await esperar(TIMEOUTS.ULTRA_RAPIDO);
     logs.push(log('info', 'Modal de tentativa aberto'));
 
     const status = concluido ? 'Concluído' : 'Não Concluído';
@@ -182,7 +195,7 @@ export const salvarStatusTentativa = async (config, logs) => {
       logs,
       'Status',
     );
-    await esperar(300);
+    await esperar(TIMEOUTS.CLIQUE);
 
     if (concluido && tipoContato) {
       const tipoTexto = tipoContato === 'whatsapp' ? 'WhatsApp' : 'Ligação';
@@ -194,7 +207,7 @@ export const salvarStatusTentativa = async (config, logs) => {
         logs,
         'Tipo de tentativa',
       );
-      await esperar(1000);
+      await esperar(TIMEOUTS.ULTRA_RAPIDO);
     }
 
     const botaoSalvar = document.querySelector(
@@ -224,7 +237,7 @@ export const salvarStatusTentativa = async (config, logs) => {
       await clicarElemento(botaoSalvar);
     }
 
-    await esperar(1000);
+    await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
     logs.push(log('sucesso', `${numeroTentativa}ª tentativa: ${status}`));
 
@@ -248,10 +261,10 @@ export const selecionarOpcaoCombobox = async function (
   label,
 ) {
   try {
-    const botao = await esperarElemento(seletorBotao, 5000);
-    await clicarElemento(botao, 500);
+    const botao = await esperarElemento(seletorBotao, TIMEOUTS.SISTEMA);
+    await clicarElemento(botao, TIMEOUTS.TRANSICAO);
 
-    await esperar(500);
+    await esperar(TIMEOUTS.TRANSICAO);
 
     const opcoes = Array.from(document.querySelectorAll(seletorOpcoes));
 
@@ -267,7 +280,7 @@ export const selecionarOpcaoCombobox = async function (
     await clicarElemento(opcao);
     logs.push(log('sucesso', `${label} selecionado: ${opcaoTexto}`));
 
-    await esperar(500);
+    await esperar(TIMEOUTS.TRANSICAO);
 
     return true;
   } catch (erro) {
@@ -276,7 +289,7 @@ export const selecionarOpcaoCombobox = async function (
   }
 };
 
-export const enviartemplateWhatsapp = async function (
+export const enviarTemplateWhatsapp = async function (
   primeiroNome,
   modelo,
   operador,
@@ -288,11 +301,11 @@ export const enviartemplateWhatsapp = async function (
     //Botão "Enviar template"
     try {
       logs.push(log('info', 'Tentando botão central...'));
-      const botaoEnviartemplate = await esperarElemento(
-        seletores.beetalk.botoes.enviartemplate,
-        3000,
+      const botaoEnviarTemplate = await esperarElemento(
+        seletores.beetalk.botoes.enviarTemplate,
+        TIMEOUTS.LONGO,
       );
-      await clicarElemento(botaoEnviartemplate, 800);
+      await clicarElemento(botaoEnviarTemplate, 800);
       logs.push(log('sucesso', 'Botão central clicado'));
       templatesAberto = true;
     } catch (erroTentativa1) {
@@ -307,7 +320,7 @@ export const enviartemplateWhatsapp = async function (
         logs.push(log('info', 'Tentando quick-messages...'));
         const tampleteRapido = await esperarElemento(
           seletores.beetalk.botoes.templateRapido,
-          3000,
+          TIMEOUTS.LONGO,
         );
         console.log(tampleteRapido);
         ativarEventosElementos(tampleteRapido);
@@ -320,49 +333,58 @@ export const enviartemplateWhatsapp = async function (
     }
 
     //pasta de templates
-    await esperar(500);
+    await esperar(TIMEOUTS.TRANSICAO);
     const pastatemplate = await esperarElemento(
       seletores.beetalk.pastatemplate('GW LIDER TEMPLATE'),
-      5000,
+      TIMEOUTS.SISTEMA,
     );
     await clicarElemento(pastatemplate, 800);
     logs.push(log('sucesso', 'Pasta GW LIDER TEMPLATE aberta'));
 
-    await esperar(500);
+    await esperar(TIMEOUTS.TRANSICAO);
     const botaotemplate = await esperarElemento(
       seletores.beetalk.botaotemplate('a0EU6000003BVunMAG'),
-      5000,
+      TIMEOUTS.SISTEMA,
     );
-    await clicarElemento(botaotemplate, 1000);
+    await clicarElemento(botaotemplate, TIMEOUTS.ULTRA_RAPIDO);
     logs.push(log('sucesso', 'Template SAUDACAO GW 2 selecionado'));
 
-    await esperar(800);
+    await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
-    const campo1 = await esperarElemento(seletores.beetalk.campo(1), 5000);
+    const campo1 = await esperarElemento(
+      seletores.beetalk.campo(1),
+      TIMEOUTS.SISTEMA,
+    );
     campo1.value = primeiroNome + ' ';
     ativarEventosElementos(campo1);
-    await esperar(200);
+    await esperar(TIMEOUTS.CLIQUE);
     logs.push(log('sucesso', 'Campo 1 preenchido: ' + primeiroNome));
 
-    const campo2 = await esperarElemento(seletores.beetalk.campo(2), 5000);
+    const campo2 = await esperarElemento(
+      seletores.beetalk.campo(2),
+      TIMEOUTS.SISTEMA,
+    );
     campo2.value = operador;
     ativarEventosElementos(campo2);
-    await esperar(200);
+    await esperar(TIMEOUTS.CLIQUE);
     logs.push(log('sucesso', 'Campo 2 preenchido: ' + operador));
 
-    const campo3 = await esperarElemento(seletores.beetalk.campo(3), 5000);
+    const campo3 = await esperarElemento(
+      seletores.beetalk.campo(3),
+      TIMEOUTS.SISTEMA,
+    );
     campo3.value = modelo || 'HAVAL H6';
     ativarEventosElementos(campo3);
-    await esperar(200);
+    await esperar(TIMEOUTS.CLIQUE);
     logs.push(log('sucesso', 'Campo 3 preenchido: ' + modelo));
 
     if (!botaoEnviar) {
       throw new Error('Botao Enviar nao encontrado');
     }
 
-    await clicarElemento(botaoEnviar, 2000);
+    await clicarElemento(botaoEnviar, TIMEOUTS.PADRAO);
     logs.push(log('sucesso', 'Template enviado'));
-    await esperar(5000);
+    await esperar(TIMEOUTS.SISTEMA);
   } catch (erro) {
     logs.push(log('erro', `Erro ao enviar template: ${erro.message} `));
     throw erro;
@@ -375,12 +397,12 @@ export const registrarTarefa = async function (mensagem, tipo, assunto, logs) {
   try {
     const botaoNovaTarefa = await esperarElemento(
       seletores.salesforce.botoes.novaTarefa,
-      5000,
+      TIMEOUTS.PADRAO,
     );
-    await clicarElemento(botaoNovaTarefa, 1500);
+    await clicarElemento(botaoNovaTarefa, TIMEOUTS.PADRAO);
     logs.push(log('sucesso', 'Modal de tarefa aberto'));
 
-    await esperar(1000);
+    await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
     // Campo tipo
     await selecionarOpcaoCombobox(
@@ -390,7 +412,7 @@ export const registrarTarefa = async function (mensagem, tipo, assunto, logs) {
       logs,
       'Tipo',
     );
-    await esperar(500);
+    await esperar(TIMEOUTS.TRANSICAO);
 
     // Campo assunto
     try {
@@ -401,7 +423,7 @@ export const registrarTarefa = async function (mensagem, tipo, assunto, logs) {
         logs,
         'Assunto',
       );
-      await esperar(500);
+      await esperar(TIMEOUTS.TRANSICAO);
     } catch (error) {
       const campoAssunto = await esperarElemento(
         seletores.salesforce.comboboxes.assunto,
@@ -443,7 +465,7 @@ export const registrarTarefa = async function (mensagem, tipo, assunto, logs) {
     textareaComentario.value = mensagem;
     ativarEventosElementos(textareaComentario);
 
-    await esperar(300);
+    await esperar(TIMEOUTS.CLIQUE);
 
     logs.push(log('sucesso', 'Comentarios preenchidos'));
 
@@ -469,7 +491,7 @@ export const registrarTarefa = async function (mensagem, tipo, assunto, logs) {
       );
     }
 
-    await esperar(800);
+    await esperar(TIMEOUTS.ULTRA_RAPIDO);
 
     // Salvar Tarefa
     const botaoSalvarTarefa = document.querySelector(

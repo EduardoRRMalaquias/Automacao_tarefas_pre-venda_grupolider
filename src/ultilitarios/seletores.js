@@ -7,10 +7,9 @@ export const seletores = {
       salvarEdicao: 'lightning-button button[name="SaveEdit"]',
       novaTarefa: 'button[aria-label="Nova tarefa"]',
       salvarTarefa: 'button.cuf-publisherShareButton',
-      abrirModalTentativa:
-        'button[title*="Salvar Status"][title*="Tentativa"]:not([style*="margin"])',
+      abrirModalTentativa: 'button[title*="Salvar Status"][title*="Tentativa"]',
       salvarTentativa:
-        'footer button[title*="Salvar Status"][title*="Tentativa"]:not([style*="margin"])',
+        'footer button[title*="Salvar Status"][title*="Tentativa"]',
     },
 
     // Inputs de Lead
@@ -65,7 +64,7 @@ export const seletores = {
   // ========== BEETALK (WhatsApp) ==========
   beetalk: {
     botoes: {
-      enviartemplate: 'p.center-button',
+      enviarTemplate: 'p.center-button',
       templateRapido: 'use[data-name="quick-messages"]',
       enviar: 'button:has-text("Enviar")', // Precisa ajustar
     },

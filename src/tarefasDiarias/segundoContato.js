@@ -1,4 +1,4 @@
-import { enviartemplate } from '../tarefasGenericas/enviarTemplate.js';
+import { enviarTemplate } from '../tarefasGenericas/enviarTemplate.js';
 import {
   log,
   salvarStatusTentativa,
@@ -26,7 +26,7 @@ export const segundoContato = {
 
       const configtemplate = configMarca.templates.segundoContato;
 
-      const resultadoEnviotemplate = await enviartemplate.executar(
+      const resultadoEnviotemplate = await enviarTemplate.executar(
         configMarca.pasta,
         configtemplate,
         undefined,

@@ -59,7 +59,7 @@ const CadastrarLead = ({
 
         const errosExibir = resultado.erros.slice(0, 5);
         errosExibir.forEach((erro) => {
-          const mensagemErro = erro.erros ? erro.erros.join(', ') : erro.erro;
+          const mensagemErro = erro.erros;
           adicionarLog('erro', `  Linha ${erro.linha}: ${mensagemErro} erros`);
         });
       }
